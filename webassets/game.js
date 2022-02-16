@@ -34,7 +34,7 @@ function hold(milisec) {
 }
 
 // loadingScreen constants
-const loadingScreenMinTime = 1;
+const loadingScreenMinTime = 10;
 let loaded = false;
 let safeMode = false;
 let loadState = 0;
@@ -50,10 +50,13 @@ async function loadTasks() {
 }
 
 function loadingScreen() {
+    let shx = 0;
+    let shy = 0;
     if (stateFrames === 1) {
         loadTasks().then(() => {console.log("loadTasks completed")})
     }
     let stateTimeMS = (new Date()) - stateInitializedTime;
+    let diff = loadingScreenMinTime*1000 - stateTimeMS;
     background(100);
     fill(255, 255, 0);
     textSize(40);
@@ -68,8 +71,15 @@ function loadingScreen() {
         fill(255, 127, 0);
         text(`Loading: ${successCount}/${requiredCount} ${Math.round(successCount/requiredCount*1000)/10}%`, windowWidth/2, windowHeight/2+30);
     }
-    fill(150);
-    text("hold SHIFT for safe mode", windowWidth/2, windowHeight-10);
+    fill(keymap[SHIFT]?255:150, keymap[SHIFT]?255:150, keymap[SHIFT]?0:150);
+    if (keymap[SHIFT]) {
+        shx = (Math.random()*2-1)*(stateFrames/10);
+        shy = (Math.random()*2-1)*(stateFrames/10);
+    } else {
+        shx = 0;
+        shy = 0;
+    }
+    text("hold SHIFT for safe mode", (windowWidth/2)+shx, (windowHeight-10)+shy);
     if (loaded && stateTimeMS >= loadingScreenMinTime*1000) {
         state = "MainMenu";
         safeMode = keymap[SHIFT]
@@ -79,7 +89,6 @@ function loadingScreen() {
         resetStateTimer();
     } else if (loaded && loadState === 0) {
         loadState = 1;
-        let diff = loadingScreenMinTime*1000 - stateTimeMS
         console.info('Loading completed with extra ' + diff + ' ms. Waiting to terminate load screen.')
     }
 }

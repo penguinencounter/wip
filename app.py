@@ -1,6 +1,8 @@
-from flask import Flask, render_template, send_file, send_from_directory
+from flask import Flask, render_template, send_from_directory
+import time
 
 app = Flask('app')
+simlag = 0
 
 
 @app.route('/')
@@ -9,12 +11,14 @@ def main():
 
 
 @app.route('/assets/web/<path:path>')
-def p5js(path):
+def wast(path):
+    time.sleep(simlag)
     return send_from_directory('webassets', path)
 
 
 @app.route('/assets/images/<path:path>')
 def img(path):
+    time.sleep(simlag)
     return send_from_directory('images', path)
 
 

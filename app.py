@@ -1,4 +1,5 @@
-from flask import Flask, render_template, send_file
+from flask import Flask, render_template, send_file, send_from_directory
+import time
 
 app = Flask('app')
 
@@ -21,6 +22,11 @@ def game_js():
 @app.route('/js/game.css')
 def game_css():
     return send_file('game.css')
+
+
+@app.route('/assets/images/<path:path>')
+def img(path):
+    return send_from_directory('images', path)
 
 
 if __name__ == '__main__':

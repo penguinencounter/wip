@@ -9,15 +9,50 @@ function windowResized() {
 
 let state = "LoadingScreen";
 let stateInitializedTime = null;
+let stateFrames = 0;
+
+let keymap = {}
+function keyPressed() {
+    console.debug('key '+ keyCode + ' ['+key+'] pressed')
+    keymap[keyCode] = true;
+}
+function keyReleased() {
+    console.debug('key '+ keyCode + ' ['+key+'] released')
+    keymap[keyCode] = false;
+}
+
 
 function resetStateTimer() {
     stateInitializedTime = new Date();
+    stateFrames = 0;
+}
+
+function hold(milisec) {
+    return new Promise(resolve => {
+        setTimeout(() => { resolve('') }, milisec);
+    })
 }
 
 // loadingScreen constants
 const loadingScreenMinTime = 1;
-let loaded = true;
+let loaded = false;
+let safeMode = false;
+let loadState = 0;
+let successCount = 0;
+const requiredCount = 1;
+async function loadTasks() {
+    function incCounter() {successCount += 1;}
+    mainMenuIMG = loadImage('/assets/images/menubg.png', incCounter);
+    while (successCount < requiredCount) {
+        await hold(100);
+    }
+    loaded = true;
+}
+
 function loadingScreen() {
+    if (stateFrames === 1) {
+        loadTasks().then(() => {console.log("loadTasks completed")})
+    }
     let stateTimeMS = (new Date()) - stateInitializedTime;
     background(100);
     fill(255, 255, 0);
@@ -25,28 +60,45 @@ function loadingScreen() {
     textAlign(CENTER, CENTER);
     textFont("monospace");
     text("Loading...", windowWidth/2, windowHeight/2);
-    fill(120);
     textSize(20);
-    text((Math.round(stateTimeMS/100)/10)+'s/'+loadingScreenMinTime+'s', windowWidth/2, windowHeight/2+30);
+    if (loaded) {
+        fill(150);
+        text('Waiting '+(Math.round(stateTimeMS/100)/10)+'s/'+loadingScreenMinTime+'s', windowWidth/2, windowHeight/2+30);
+    } else {
+        fill(255, 127, 0);
+        text(`Loading: ${successCount}/${requiredCount} ${Math.round(successCount/requiredCount*1000)/10}%`, windowWidth/2, windowHeight/2+30);
+    }
+    fill(150);
     text("hold SHIFT for safe mode", windowWidth/2, windowHeight-10);
     if (loaded && stateTimeMS >= loadingScreenMinTime*1000) {
-        state = "MainMenu"
+        state = "MainMenu";
+        safeMode = keymap[SHIFT]
+        if (safeMode) {
+            console.warn('Safe mode activated')
+        }
         resetStateTimer();
+    } else if (loaded && loadState === 0) {
+        loadState = 1;
+        let diff = loadingScreenMinTime*1000 - stateTimeMS
+        console.info('Loading completed with extra ' + diff + ' ms. Waiting to terminate load screen.')
     }
 }
 
-
+// mainMenu constants
+let mainMenuIMG;
 function mainMenu() {
-
+    let stateTimeMS = (new Date()) - stateInitializedTime;
+    background(Math.sin(stateTimeMS/1000)*63+63, 0, 0);
 }
 
 function draw() {
+    stateFrames += 1;
     switch (state) {
         case "LoadingScreen":
             loadingScreen();
             break;
         case "MainMenu":
-            background();
+            mainMenu();
             break;
     }
 }

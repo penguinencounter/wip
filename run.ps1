@@ -1,1 +1,1 @@
-flask run -h 0.0.0.0 --reload --debugger
+flask run -h 0.0.0.0 -p 8080 --reload --debugger

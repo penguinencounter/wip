@@ -9,19 +9,9 @@ def main():
     return render_template('main.html')
 
 
-@app.route('/js/p5.min.js')
-def p5js():
-    return send_file('p5.min.js')
-
-
-@app.route('/js/game.js')
-def game_js():
-    return send_file('game.js')
-
-
-@app.route('/js/game.css')
-def game_css():
-    return send_file('game.css')
+@app.route('/assets/web/<path:path>')
+def p5js(path):
+    return send_from_directory('webassets', path)
 
 
 @app.route('/assets/images/<path:path>')

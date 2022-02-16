@@ -35,13 +35,18 @@ function loadingScreen() {
     }
 }
 
+
+function mainMenu() {
+
+}
+
 function draw() {
     switch (state) {
         case "LoadingScreen":
             loadingScreen();
             break;
         case "MainMenu":
-            background(80);
+            background();
             break;
     }
 }

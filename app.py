@@ -1,5 +1,4 @@
 from flask import Flask, render_template, send_file, send_from_directory
-import time
 
 app = Flask('app')
 

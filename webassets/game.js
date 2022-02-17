@@ -29,14 +29,16 @@ class Button {
     }
 
     isCursorWithin(cX, cY) {
-        const result = (this.x <= cX <= this.x + this.w) && (this.y <= cY <= this.y + this.h);
+        let p1 = (this.x <= cX && cX <= (this.x + this.w));
+        let p2 = (this.y <= cY && cY <= (this.y + this.h));
+        let result = p1 && p2;
         this.hovered = result;
         return result;
     }
 
     autoCenter(sW, sH, oX, oY) {
         this.x = (sW/2)-(this.w/2)+oX;
-        this.x = (sH/2)-(this.h/2)+oY;
+        this.y = (sH/2)-(this.h/2)+oY;
     }
 }
 
@@ -80,7 +82,7 @@ function hold(milisec) {
 }
 
 // loadingScreen constants
-const loadingScreenMinTime = 10;
+const loadingScreenMinTime = 2;
 let loaded = false;
 let safeMode = false;
 let loadState = 0;
@@ -147,6 +149,7 @@ let xPos;
 let yPos;
 let startButton;
 function mainMenu() {
+    let hasClickable = false;
     if (stateFrames === 1) {
         startButton = new Button("Start", 0, 0, 150, 50, color(0, 127, 255), color(0, 255, 255), color(255), color(0));
     }
@@ -173,7 +176,8 @@ function mainMenu() {
     alignBGImg();
     textSize(30);
     startButton.draw();
-    startButton.isCursorWithin(mouseX, mouseY);
+    hasClickable = hasClickable || startButton.isCursorWithin(mouseX, mouseY);
+    cursor(hasClickable?'pointer':'default');
 }
 
 function draw() {

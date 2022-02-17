@@ -1,3 +1,46 @@
+class Button {
+    constructor(str, x, y, w, h, bg, bg_hov, fg, fg_hov) {
+        this.str = str;
+
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+
+        this.bg = bg;
+        this.bg_hov = bg_hov;
+        this.fg = fg;
+        this.fg_hov = fg_hov;
+
+        this.hovered = false;
+    }
+
+    draw() {
+        // Apply any stroke/textFont/textSize before calling draw.
+
+        // Background of button
+        fill(this.hovered?this.bg_hov:this.bg);
+        rect(this.x, this.y, this.w, this.h);
+
+        // Foreground text
+        fill(this.hovered?this.fg_hov:this.fg);
+        textAlign(CENTER, CENTER);
+        text(this.str, this.x+(this.w/2), this.y+(this.h/2));
+    }
+
+    isCursorWithin(cX, cY) {
+        const result = (this.x <= cX <= this.x + this.w) && (this.y <= cY <= this.y + this.h);
+        this.hovered = result;
+        return result;
+    }
+
+    autoCenter(sW, sH, oX, oY) {
+        this.x = (sW/2)-(this.w/2)+oX;
+        this.x = (sH/2)-(this.h/2)+oY;
+    }
+}
+
+
 function setup() {
     document.getElementById('wipeme').innerHTML = '';
     createCanvas(windowWidth, windowHeight);
@@ -93,7 +136,11 @@ let stretchX;
 let stretchY;
 let xPos;
 let yPos;
+let startButton;
 function mainMenu() {
+    if (stateFrames === 1) {
+        startButton = new Button("Start", 0, 0, 150, 50, color(0, 127, 255), color(0, 255, 255), color(255), color(0));
+    }
     // Image alignment: we have 2048*2048.
     // Try to center.
     // If display is too wide, apply stretch.
@@ -106,11 +153,18 @@ function mainMenu() {
         xPos = stretchX?0:(windowWidth-2048)/2;
         yPos = stretchY?0:(windowHeight-2048)/2;
         console.log(`Background image aligned to ${xPos}, ${yPos}${stretchX?" Stretching X":""}${stretchY?" Stretching Y":""}`);
+
+        // Center start button
+        startButton.autoCenter(windowWidth, windowHeight, 0, 0);
+
         recomputePositioning = false;
     }
     let stateTimeMS = (new Date()) - stateInitializedTime;
     background(0, 0, 0);
     alignBGImg();
+    textSize(30);
+    startButton.draw();
+    startButton.isCursorWithin(mouseX, mouseY);
 }
 
 function draw() {

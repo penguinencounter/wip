@@ -5,7 +5,10 @@ function setup() {
 }
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+  recomputePositioning = true;
 }
+
+let recomputePositioning = true;
 
 let state = "LoadingScreen";
 let stateInitializedTime = null;
@@ -13,11 +16,11 @@ let stateFrames = 0;
 
 let keymap = {}
 function keyPressed() {
-    console.debug('key '+ keyCode + ' ['+key+'] pressed')
+    console.debug('key '+ keyCode + ' ['+key+'] pressed');
     keymap[keyCode] = true;
 }
 function keyReleased() {
-    console.debug('key '+ keyCode + ' ['+key+'] released')
+    console.debug('key '+ keyCode + ' ['+key+'] released');
     keymap[keyCode] = false;
 }
 
@@ -30,7 +33,7 @@ function resetStateTimer() {
 function hold(milisec) {
     return new Promise(resolve => {
         setTimeout(() => { resolve('') }, milisec);
-    })
+    });
 }
 
 // loadingScreen constants
@@ -53,7 +56,7 @@ function loadingScreen() {
     let shx = 0;
     let shy = 0;
     if (stateFrames === 1) {
-        loadTasks().then(() => {console.log("loadTasks completed")})
+        loadTasks().then(() => {console.log("loadTasks completed")});
     }
     let stateTimeMS = (new Date()) - stateInitializedTime;
     let diff = loadingScreenMinTime*1000 - stateTimeMS;
@@ -82,9 +85,9 @@ function loadingScreen() {
     text("hold SHIFT for safe mode", (windowWidth/2)+shx, (windowHeight-10)+shy);
     if (loaded && stateTimeMS >= loadingScreenMinTime*1000) {
         state = "MainMenu";
-        safeMode = keymap[SHIFT]
+        safeMode = keymap[SHIFT];
         if (safeMode) {
-            console.warn('Safe mode activated')
+            console.warn('Safe mode activated');
         }
         resetStateTimer();
     } else if (loaded && loadState === 0) {
@@ -95,9 +98,28 @@ function loadingScreen() {
 
 // mainMenu constants
 let mainMenuIMG;
+let stretchX;
+let stretchY;
+let xPos;
+let yPos;
 function mainMenu() {
+    // Image alignment: we have 2048*2048.
+    // Try to center.
+    // If display is too wide, apply stretch.
+    function alignBGImg() {
+        image(mainMenuIMG, xPos, yPos, stretchX?windowWidth:2048, stretchY?windowHeight:2048);
+    }
+    if (recomputePositioning) {
+        stretchX = windowWidth >= 2048;
+        stretchY = windowHeight >= 2048;
+        xPos = stretchX?0:(windowWidth-2048)/2;
+        yPos = stretchY?0:(windowHeight-2048)/2;
+        console.log(`Background image aligned to ${xPos}, ${yPos}${stretchX?" Stretching X":""}${stretchY?" Stretching Y":""}`);
+        recomputePositioning = false;
+    }
     let stateTimeMS = (new Date()) - stateInitializedTime;
-    background(Math.sin(stateTimeMS/1000)*63+63, 0, 0);
+    background(0, 0, 0);
+    alignBGImg();
 }
 
 function draw() {

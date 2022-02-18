@@ -97,6 +97,7 @@ async function loadTasks() {
     loaded = true;
 }
 
+
 function loadingScreen() {
     let shx = 0;
     let shy = 0;
@@ -141,6 +142,60 @@ function loadingScreen() {
     }
 }
 
+function extrapolateLineAngle(x1, y1, length, angle) {
+    return [x1+length*Math.cos(angle), y1+length*Math.sin(angle)]
+}
+
+
+let coolBGBuffer = [];
+let coolBGConfig = {
+    start: {
+        s: 100,
+        b: 100
+    },
+    current: {
+        h: 0,
+        r: 0,
+        d: 0,
+        pr: 0,
+        pd: 0
+    },
+    h_gain: 1,
+    r_gain: 120,
+    d_gain: 1,
+    max_d: 1000,
+    steps_per_frame: 5,
+    maxLinesDrawn: 1000
+}
+function coolBG() {
+    colorMode(HSB);
+    // Rendering
+    for (let seg of coolBGBuffer) {
+        stroke(seg.h, coolBGConfig.start.s, coolBGConfig.start.b);
+        strokeWeight(5)
+        line(seg.startPos[0], seg.startPos[1], seg.endPos[0], seg.endPos[1]);
+    }
+    colorMode(RGB);
+    for (let i = 0; i < coolBGConfig.steps_per_frame; i ++) {
+        if (coolBGBuffer.length > coolBGConfig.maxLinesDrawn) {
+            coolBGBuffer.shift();
+        }
+        coolBGConfig.current.h += coolBGConfig.h_gain;
+        coolBGConfig.current.h %= 360;
+        coolBGConfig.current.r += coolBGConfig.r_gain;
+        coolBGConfig.current.d += coolBGConfig.d_gain;
+        if (coolBGConfig.current.d >= coolBGConfig.max_d) {
+            coolBGConfig.current.d = 0;
+            coolBGConfig.current.pd = 0;
+        }
+        let startPos = extrapolateLineAngle(windowWidth/2, windowHeight/2, coolBGConfig.current.pd, coolBGConfig.current.pr);
+        let endPos = extrapolateLineAngle(windowWidth/2, windowHeight/2, coolBGConfig.current.d, coolBGConfig.current.r);
+        coolBGBuffer.push({startPos: startPos, endPos: endPos, h: coolBGConfig.current.h});
+        coolBGConfig.current.pr = coolBGConfig.current.r;
+        coolBGConfig.current.pd = coolBGConfig.current.d;
+    }
+}
+
 // mainMenu constants
 let mainMenuIMG;
 let stretchX;
@@ -169,11 +224,15 @@ function mainMenu() {
         // Center start button
         startButton.autoCenter(windowWidth, windowHeight, 0, 0);
 
+        coolBGConfig.max_d = Math.max(windowWidth, windowHeight);
+        coolBGConfig.maxLinesDrawn = Math.max(windowWidth, windowHeight);
         recomputePositioning = false;
     }
     let stateTimeMS = (new Date()) - stateInitializedTime;
     background(0, 0, 0);
-    alignBGImg();
+    // alignBGImg();
+    coolBG();
+    noStroke();
     textSize(30);
     startButton.draw();
     hasClickable = hasClickable || startButton.isCursorWithin(mouseX, mouseY);

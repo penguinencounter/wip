@@ -168,13 +168,18 @@ let coolBGConfig = {
     steps_per_frame: 5,
     maxLinesDrawn: 1000,
     lightMode: false,
+    lagFrames: 0,
     allowLightMode: true,
-    useFillerLines: true
+    useFillerLines: false
 }
 function coolBG() {
-    if (frameRate() < 20 && !coolBGConfig.lightMode && coolBGConfig.allowLightMode) {
-        coolBGConfig.lightMode = true;
-        console.info('Lightweight mode enabled!')
+    if (frameRate() < 30 &&  coolBGConfig.allowLightMode) {
+        coolBGConfig.lagFrames += 1;
+        if (coolBGConfig.lagFrames > 20) {
+            coolBGConfig.lightMode = true;
+        }
+    } else {
+        coolBGConfig.lagFrames = 0;
     }
     colorMode(HSB);
     fill(coolBGConfig.current.h, coolBGConfig.start.s, coolBGConfig.start.b, 1);

@@ -190,12 +190,14 @@ function coolBG() {
         text(Math.round(frameRate()) + ' fps', 0, windowHeight)
     }
     // Rendering
-    for (let seg of coolBGBuffer) {
-        if (coolBGConfig.useFillerLines) {
+    if (coolBGConfig.useFillerLines) {
+        for (let seg of coolBGBuffer) {
             stroke(seg.h, coolBGConfig.start.s, coolBGConfig.start.b, coolBGConfig.start.a/2);
             strokeWeight(40);
             line(seg.startPos[0], seg.startPos[1], seg.endPos[0], seg.endPos[1]);
         }
+    }
+    for (let seg of coolBGBuffer) {
         stroke(seg.h, coolBGConfig.start.s, coolBGConfig.start.b, coolBGConfig.start.a);
         strokeWeight(10);
         line(seg.startPos[0], seg.startPos[1], seg.endPos[0], seg.endPos[1]);

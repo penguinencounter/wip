@@ -166,19 +166,43 @@ let coolBGConfig = {
     d_gain: 1,
     max_d: 1000,
     steps_per_frame: 5,
-    maxLinesDrawn: 1000
+    maxLinesDrawn: 1000,
+    lightMode: false,
+    allowLightMode: true,
+    useFillerLines: true
 }
 function coolBG() {
+    if (frameRate() < 20 && !coolBGConfig.lightMode && coolBGConfig.allowLightMode) {
+        coolBGConfig.lightMode = true;
+        console.info('Lightweight mode enabled!')
+    }
     colorMode(HSB);
+    fill(coolBGConfig.current.h, coolBGConfig.start.s, coolBGConfig.start.b, 1);
+    textAlign(LEFT, BOTTOM);
+    textSize(30);
+    if (coolBGConfig.lightMode) {
+        coolBGConfig.maxLinesDrawn = 150;  // performance option 1
+        // coolBGConfig.steps_per_frame = 1; // performance option 2
+        coolBGConfig.useFillerLines = false;
+        text(Math.round(frameRate()) + ' fps', 0, windowHeight-30)
+        text('Performace mode enabled', 0, windowHeight);
+    } else {
+        text(Math.round(frameRate()) + ' fps', 0, windowHeight)
+    }
     // Rendering
     for (let seg of coolBGBuffer) {
         stroke(seg.h, coolBGConfig.start.s, coolBGConfig.start.b, coolBGConfig.start.a);
-        strokeWeight(10)
+        strokeWeight(10);
         line(seg.startPos[0], seg.startPos[1], seg.endPos[0], seg.endPos[1]);
+        if (coolBGConfig.useFillerLines) {
+            stroke(seg.h, coolBGConfig.start.s, coolBGConfig.start.b, coolBGConfig.start.a/2);
+            strokeWeight(20);
+            line(seg.startPos[0], seg.startPos[1], seg.endPos[0], seg.endPos[1]);
+        }
     }
     colorMode(RGB);
     for (let i = 0; i < coolBGConfig.steps_per_frame; i ++) {
-        if (coolBGBuffer.length > coolBGConfig.maxLinesDrawn) {
+        while (coolBGBuffer.length > coolBGConfig.maxLinesDrawn) {
             coolBGBuffer.shift();
         }
         coolBGConfig.current.h += coolBGConfig.h_gain;
@@ -236,6 +260,7 @@ function mainMenu() {
     noStroke();
     textSize(30);
     startButton.draw();
+    fill(255);
     hasClickable = hasClickable || startButton.isCursorWithin(mouseX, mouseY);
     cursor(hasClickable?'pointer':'default');
 }

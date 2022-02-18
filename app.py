@@ -7,9 +7,8 @@ simlag = 0
 
 
 SERVERS = [
-    ServerMeta(-1, "Celestia"),
-    ServerMeta(-2, "Canary"),
-    ServerMeta(1, "The Original")
+    ServerMeta(-1, "CelestiaDev"),
+    ServerMeta(1, "ProdTest")
 ]
 
 
@@ -33,6 +32,11 @@ def img(path):
 @app.route('/servers')
 def get_servers():
     return jsonify(list(map(lambda x: x.__dict__, SERVERS)))
+
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
 
 
 if __name__ == '__main__':

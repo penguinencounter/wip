@@ -191,14 +191,14 @@ function coolBG() {
     }
     // Rendering
     for (let seg of coolBGBuffer) {
+        if (coolBGConfig.useFillerLines) {
+            stroke(seg.h, coolBGConfig.start.s, coolBGConfig.start.b, coolBGConfig.start.a/2);
+            strokeWeight(40);
+            line(seg.startPos[0], seg.startPos[1], seg.endPos[0], seg.endPos[1]);
+        }
         stroke(seg.h, coolBGConfig.start.s, coolBGConfig.start.b, coolBGConfig.start.a);
         strokeWeight(10);
         line(seg.startPos[0], seg.startPos[1], seg.endPos[0], seg.endPos[1]);
-        if (coolBGConfig.useFillerLines) {
-            stroke(seg.h, coolBGConfig.start.s, coolBGConfig.start.b, coolBGConfig.start.a/2);
-            strokeWeight(20);
-            line(seg.startPos[0], seg.startPos[1], seg.endPos[0], seg.endPos[1]);
-        }
     }
     colorMode(RGB);
     for (let i = 0; i < coolBGConfig.steps_per_frame; i ++) {

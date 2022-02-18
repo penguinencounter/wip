@@ -151,7 +151,8 @@ let coolBGBuffer = [];
 let coolBGConfig = {
     start: {
         s: 100,
-        b: 100
+        b: 100,
+        a: 0.2
     },
     current: {
         h: 0,
@@ -171,8 +172,8 @@ function coolBG() {
     colorMode(HSB);
     // Rendering
     for (let seg of coolBGBuffer) {
-        stroke(seg.h, coolBGConfig.start.s, coolBGConfig.start.b);
-        strokeWeight(5)
+        stroke(seg.h, coolBGConfig.start.s, coolBGConfig.start.b, coolBGConfig.start.a);
+        strokeWeight(10)
         line(seg.startPos[0], seg.startPos[1], seg.endPos[0], seg.endPos[1]);
     }
     colorMode(RGB);

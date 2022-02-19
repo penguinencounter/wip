@@ -13,9 +13,15 @@ class Button {
         this.fg_hov = fg_hov;
 
         this.hovered = false;
+        this.rendering = false;
+
+        this.on_click = null;
+
+        this.prio = 0;
     }
 
     draw() {
+        if (!this.rendering) {return;}
         // Apply any stroke/textFont/textSize before calling draw.
 
         // Background of button
@@ -31,8 +37,7 @@ class Button {
     isCursorWithin(cX, cY) {
         let p1 = (this.x <= cX && cX <= (this.x + this.w));
         let p2 = (this.y <= cY && cY <= (this.y + this.h));
-        let result = p1 && p2;
-        this.hovered = result;
+        let result = p1 && p2 && this.rendering;
         return result;
     }
 
@@ -41,11 +46,62 @@ class Button {
         this.y = (sH/2)-(this.h/2)+oY;
     }
 }
+let buttons = {}
+
+
+function buttonClickAction() {
+    let target = null;
+    let max_prio = -1;
+    for (let prop in buttons) {
+        let button = buttons[prop];
+        if (!button.rendering) {
+            continue;
+        }
+        if (button.isCursorWithin(mouseX, mouseY) && button.prio > max_prio && button.on_click !== null) {
+            max_prio = button.prio;
+            target = button;
+        }
+    }
+    if (target !== null) {
+        target.on_click();
+        return true;
+    }
+    return false;
+}
+
+function buttonDrawAction() {
+    let target = null;
+    let max_prio = -1;
+    let rv = false;
+    for (let prop in buttons) {
+        let button = buttons[prop];
+        if (!button.rendering) {
+            continue;
+        }
+        button.hovered = false;
+        if (button.isCursorWithin(mouseX, mouseY) && button.prio > max_prio) {
+            max_prio = button.prio;
+            target = button;
+        }
+    }
+    if (target !== null) {
+        target.hovered = true;
+        rv = true;
+    }
+    for (let prop in buttons) {
+        let button = buttons[prop];
+        button.draw();
+    }
+    return rv
+}
+
+let cnv;
 
 
 function setup() {
     document.getElementById('wipeme').innerHTML = '';
-    createCanvas(windowWidth, windowHeight);
+    cnv = createCanvas(windowWidth, windowHeight);
+    cnv.mouseClicked(buttonClickAction);
     resetStateTimer();
 }
 function windowResized() {
@@ -161,7 +217,7 @@ let coolBGConfig = {
         pr: 0,
         pd: 0
     },
-    h_gain: 1,
+    h_gain: 0.1,
     r_gain: 120,
     d_gain: 1,
     max_d: 1000,
@@ -234,17 +290,17 @@ let stretchX;
 let stretchY;
 let xPos;
 let yPos;
-let startButton;
 function mainMenu() {
     let hasClickable = false;
     if (stateFrames === 1) {
-        startButton = new Button("Start", 0, 0, 150, 50, color(0, 127, 255), color(0, 255, 255), color(255), color(0));
-    }
-    // Image alignment: we have 2048*2048.
-    // Try to center.
-    // If display is too wide, apply stretch.
-    function alignBGImg() {
-        image(mainMenuIMG, xPos, yPos, stretchX?windowWidth:2048, stretchY?windowHeight:2048);
+        buttons.startButton = new Button("Start", 0, 0, 150, 50, color(0, 127, 255), color(0, 255, 255), color(255), color(0));
+        buttons.startButton.rendering = true;
+        buttons.startButton.on_click = function() {
+            this.rendering = false;
+            resetStateTimer();
+            state = 'SelectProfile';
+        }
+        recomputePositioning = true;
     }
     if (recomputePositioning) {
         stretchX = windowWidth >= 2048;
@@ -254,21 +310,43 @@ function mainMenu() {
         console.log(`Background image aligned to ${xPos}, ${yPos}${stretchX?" Stretching X":""}${stretchY?" Stretching Y":""}`);
 
         // Center start button
-        startButton.autoCenter(windowWidth, windowHeight, 0, 0);
+        buttons.startButton.autoCenter(windowWidth, windowHeight, 0, 0);
 
         coolBGConfig.max_d = Math.max(windowWidth, windowHeight);
         coolBGConfig.maxLinesDrawn = Math.max(windowWidth, windowHeight);
         recomputePositioning = false;
     }
-    let stateTimeMS = (new Date()) - stateInitializedTime;
     background(0, 0, 0);
     // alignBGImg();
     coolBG();
     noStroke();
     textSize(30);
-    startButton.draw();
+    hasClickable = buttonDrawAction();
     fill(255);
-    hasClickable = hasClickable || startButton.isCursorWithin(mouseX, mouseY);
+    cursor(hasClickable?'pointer':'default');
+}
+
+function noStateErrorScreen() {
+    let hasClickable = false;
+    if (stateFrames === 1) {
+        buttons.reset = new Button("Reset", 0, 0, 300, 50, color(255, 127, 0), color(255, 255, 0), color(0), color(0));
+        buttons.reset.rendering = true;
+        buttons.reset.on_click = function() {
+            document.location.reload();
+        }
+        recomputePositioning = true;
+    }
+
+    if (recomputePositioning) {
+        buttons.reset.autoCenter(windowWidth, windowHeight, 0, 50);
+        recomputePositioning = false;
+    }
+    background(40);
+    textAlign(CENTER, CENTER);
+    textSize(40);
+    fill(255, 0, 0);
+    text("State Not Found :(", windowWidth/2, windowHeight/2);
+    hasClickable = buttonDrawAction();
     cursor(hasClickable?'pointer':'default');
 }
 
@@ -280,6 +358,9 @@ function draw() {
             break;
         case "MainMenu":
             mainMenu();
+            break;
+        default:
+            noStateErrorScreen();
             break;
     }
 }

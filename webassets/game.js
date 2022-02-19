@@ -326,9 +326,23 @@ function mainMenu() {
     cursor(hasClickable?'pointer':'default');
 }
 
-function noStateErrorScreen() {
+let errorReported = false;
+let errorCount = 0;
+function errorScreen(msg) {
     let hasClickable = false;
     if (stateFrames === 1) {
+        let f = new FormData();
+        f.append('msg', msg);
+        const data = new URLSearchParams(f);
+        fetch('/report_err', {
+            method: "POST",
+            body: data
+        }).then(
+            d => d.text()
+        ).then((t) => {
+            errorReported = true;
+            errorCount = parseInt(t);
+        });
         buttons.reset = new Button("Reset", 0, 0, 300, 50, color(255, 127, 0), color(255, 255, 0), color(0), color(0));
         buttons.reset.rendering = true;
         buttons.reset.on_click = function() {
@@ -345,7 +359,10 @@ function noStateErrorScreen() {
     textAlign(CENTER, CENTER);
     textSize(40);
     fill(255, 0, 0);
-    text("State Not Found :(", windowWidth/2, windowHeight/2);
+    text(msg, windowWidth/2, windowHeight/2);
+    textSize(20);
+    text('ERROR' + (errorReported?` (Reported, Count ${errorCount})`:' (Sending...)'), windowWidth/2, windowHeight/2-40);
+    textSize(40);
     hasClickable = buttonDrawAction();
     cursor(hasClickable?'pointer':'default');
 }
@@ -360,7 +377,7 @@ function draw() {
             mainMenu();
             break;
         default:
-            noStateErrorScreen();
+            errorScreen(`State not found: "${state}"`);
             break;
     }
 }

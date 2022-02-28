@@ -367,17 +367,27 @@ function errorScreen(msg) {
     cursor(hasClickable?'pointer':'default');
 }
 
+let errorStateMsg = ''
 function draw() {
-    stateFrames += 1;
-    switch (state) {
-        case "LoadingScreen":
-            loadingScreen();
-            break;
-        case "MainMenu":
-            mainMenu();
-            break;
-        default:
-            errorScreen(`State not found: "${state}"`);
-            break;
+    try {
+        stateFrames += 1;
+        switch (state) {
+            case "LoadingScreen":
+                loadingScreen();
+                break;
+            case "MainMenu":
+                mainMenu();
+                break;
+            case "Error":
+                errorScreen(errorStateMsg);
+                break;
+            default:
+                errorScreen(`State not found: "${state}"`);
+                break;
+        }
+    } catch (e) {
+        state = "Error";
+        errorStateMsg = e.message;
+        resetStateTimer();
     }
 }

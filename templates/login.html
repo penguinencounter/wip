@@ -5,12 +5,12 @@
         <script src="/assets/web/login.js"></script>
     </head>
     <body>
-        <form id="login_register" class="theme_blue" name="login_register">
+        <form id="login_register" class="theme_blue" name="login_register" method="post">
             <div id="login_register_switch_decor" class="pointer">
                 <span><span id="login_decor_switch_txt">Login</span> or <span id="register_decor_switch_txt">Register</span></span>
             </div>
-            <input type="text" placeholder="Username..." name="name">
-            <input type="password" placeholder="Password..." name="pass">
+            <input type="text" placeholder="Username..." name="name" required>
+            <input type="password" placeholder="Password..." name="pass" required>
             <input type="submit" name="submit" id="submit_btn" value="?" disabled>
         </form>
     </body>

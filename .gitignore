@@ -1,3 +1,4 @@
 .idea/
 __pycache__/
 error_reports.json
+venv/

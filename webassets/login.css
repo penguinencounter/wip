@@ -96,3 +96,7 @@ body {
     background-color: #820;
     color: #aaa;
 }
+
+#message:empty {
+    display: none !important;
+}

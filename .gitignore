@@ -2,3 +2,4 @@
 __pycache__/
 error_reports.json
 venv/
+storage/users.json

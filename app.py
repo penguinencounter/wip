@@ -1,5 +1,5 @@
 from flask import Flask, render_template, send_from_directory, jsonify, request
-from datastructures import ServerMeta, users, dump_users, load_users
+import datastructures
 import time
 from json import load as jload, dump as jdump
 import os
@@ -11,8 +11,8 @@ simlag = 0
 
 
 SERVERS = [
-    ServerMeta(-1, "CelestiaDev"),
-    ServerMeta(1, "ProdTest")
+    datastructures.ServerMeta(-1, "CelestiaDev"),
+    datastructures.ServerMeta(1, "ProdTest")
 ]
 
 
@@ -40,25 +40,36 @@ def get_servers():
 
 def validate_username(name):
     rx = r'^[\w-]{3,18}$'
-    return re.search(rx, name) is not None and name not in users
+    return re.search(rx, name) is not None and name not in datastructures.users
 
 
 @app.route('/login', methods=('GET', 'POST'))
 def login():
+    print(f'{len(datastructures.users)} users')
     if request.method == 'GET':
         return render_template('login.html', message='')
     if request.method == 'POST':
         if request.form['submit'] == 'Login':
-            return 'login'
+            name = request.form['name']
+            passwd = request.form['pass']
+            hash = hashlib.sha256(bytes(passwd, encoding='utf-8')).hexdigest()
+            if name not in datastructures.users.keys():
+                print(f'Login failed: user {name} not found')
+                return render_template('login.html', message='Invalid username or password')
+            if datastructures.users[name] != hash:
+                print(f'Login failed: Incorrect password for {name}')
+                return render_template('login.html', message='Invalid username or password')
+            print(f'Successful login for {name} ({hash[:8]})')
+            return 'Sucess!1!!!'
         if request.form['submit'] == 'Register':
             name = request.form['name']
             passwd = request.form['pass']
             hash = hashlib.sha256(bytes(passwd, encoding='utf-8')).hexdigest()
             valid = validate_username(name)
             if valid:
-                users[name] = hash
-                print(f'registering {name} with {hash}')
-                dump_users()
+                datastructures.users[name] = hash
+                print(f'registering {name} with {hash[:8]}...')
+                datastructures.dump_users()
                 return render_template('login.html', message='Success! You can now log in.')
             else:
                 return render_template('login.html', message='Failed: bad username')
@@ -82,5 +93,5 @@ def errorReport():
 
 
 if __name__ == '__main__':
-    load_users()
+    datastructures.load_users()
     app.run(host='0.0.0.0', port=8080, debug=True)

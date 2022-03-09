@@ -112,6 +112,7 @@ function windowResized() {
 let recomputePositioning = true;
 
 let state = "LoadingScreen";
+let nextState = "MainMenu"
 let stateInitializedTime = null;
 let stateFrames = 0;
 
@@ -186,7 +187,7 @@ function loadingScreen() {
     }
     text("hold SHIFT for safe mode", (windowWidth/2)+shx, (windowHeight-10)+shy);
     if (loaded && stateTimeMS >= loadingScreenMinTime*1000) {
-        state = "MainMenu";
+        state = document.location.hash===''?"MainMenu":document.location.hash.substring(1);
         safeMode = keymap[SHIFT];
         if (safeMode) {
             console.warn('Safe mode activated');
@@ -298,7 +299,7 @@ function mainMenu() {
         buttons.startButton.on_click = function() {
             this.rendering = false;
             resetStateTimer();
-            state = 'SelectProfile';
+            state = 'SelectProfile';  // Login automatically
         }
         recomputePositioning = true;
     }
@@ -367,6 +368,32 @@ function errorScreen(msg) {
     cursor(hasClickable?'pointer':'default');
 }
 
+let validated = false;
+function validateMe() {
+    return fetch('/validate_me').then(response => response.json())
+}
+let validatationText = 'Signing in...'
+function validation() {
+    if (stateFrames === 1) {
+        validationText = 'Signing in...'
+        validateMe().then((json) => {
+            if (json.result === true) {
+                resetStateTimer();
+                validated = true;
+                state = nextState;
+            } else {
+                validationText = 'Loading...'
+                document.location = '/login'
+            }
+        })
+    }
+    background(40);
+    fill(255, 255, 0);
+    textSize(25);
+    textAlign(CENTER, CENTER);
+    text(validationText, windowWidth/2, windowHeight/2);
+}
+
 let errorStateMsg = ''
 function draw() {
     try {
@@ -377,6 +404,18 @@ function draw() {
                 break;
             case "MainMenu":
                 mainMenu();
+                break;
+            case "ValidateLogin":
+                validation();
+                break;
+            case "SelectProfile":
+                if (!validated) {
+                    resetStateTimer();
+                    state = "ValidateLogin";
+                    nextState = "SelectProfile";
+                    break;
+                }
+                errorScreen(`Work in progress :(`)
                 break;
             case "Error":
                 errorScreen(errorStateMsg);

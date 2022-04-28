@@ -139,7 +139,7 @@ function hold(milisec) {
 }
 
 // loadingScreen constants
-const loadingScreenMinTime = 2;
+const loadingScreenMinTime = 1;
 let loaded = false;
 let safeMode = false;
 let loadState = 0;
@@ -368,6 +368,12 @@ function errorScreen(msg) {
     cursor(hasClickable?'pointer':'default');
 }
 
+function profileSelector() {
+    background(0);
+    fill(255, 255, 255, 127);
+    ellipse((windowWidth/2)-5, (windowHeight/2)+150, 200, 100);
+}
+
 let validated = false;
 function validateMe() {
     return fetch('/validate_me').then(response => response.json())
@@ -394,6 +400,15 @@ function validation() {
     text(validationText, windowWidth/2, windowHeight/2);
 }
 
+function requiresLogin(src) {
+    if (!validated) {
+        resetStateTimer();
+        state = "ValidateLogin";
+        nextState = src;
+    }
+    return validated;
+}
+
 let errorStateMsg = ''
 function draw() {
     try {
@@ -414,8 +429,8 @@ function draw() {
                     state = "ValidateLogin";
                     nextState = "SelectProfile";
                     break;
-                }
-                errorScreen(`Work in progress :(`)
+                }    
+                profileSelector();
                 break;
             case "Error":
                 errorScreen(errorStateMsg);

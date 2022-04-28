@@ -7,7 +7,11 @@ import re
 import hashlib
 
 app = Flask('app')
-app.secret_key = os.environ['secret']
+if 'secret' in os.environ.keys():
+    app.secret_key = os.environ['secret']
+else:
+    print('!!! DEFAULT SECRET KEY IN USE !!!')
+    app.secret_key = 'default_please_dont_use_this_in_prod'
 simlag = 0
 
 

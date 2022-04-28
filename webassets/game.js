@@ -107,6 +107,7 @@ function setup() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   recomputePositioning = true;
+  profileSelectorData.recomputeLayout = true;
 }
 
 let recomputePositioning = true;
@@ -332,6 +333,9 @@ let errorCount = 0;
 function errorScreen(msg) {
     let hasClickable = false;
     if (stateFrames === 1) {
+        for (const prop of Object.getOwnPropertyNames(buttons)) {
+            delete buttons[prop];
+        }
         let f = new FormData();
         f.append('msg', msg);
         const data = new URLSearchParams(f);
@@ -368,15 +372,57 @@ function errorScreen(msg) {
     cursor(hasClickable?'pointer':'default');
 }
 
+let profileSelectorData = {
+    spotlightX: 0,
+    profileId: 0,
+    recomputeLayout: false
+}
 function profileSelector() {
     background(0);
-    fill(255, 255, 255, 127);
-    ellipse((windowWidth/2)-5, (windowHeight/2)+150, 200, 100);
+    let diff = windowWidth/2 - profileSelectorData.spotlightX;
+    profileSelectorData.spotlightX += diff/20;
+
+    if (stateFrames === 1) {
+        buttons.previousProfile = new Button("<", 0, 0, 50, 50, color(0, 80, 0), color(0, 120, 0), color(255), color(255));
+        buttons.previousProfile.rendering = false;
+        buttons.previousProfile.on_click = () => {profileSelectorData.profileId--; profileSelectorData.recomputeLayout = true;}
+        buttons.nextProfile = new Button(">", 0, 0, 50, 50, color(0, 80, 0), color(0, 120, 0), color(255), color(255));
+        buttons.nextProfile.rendering = true;
+        buttons.nextProfile.on_click = () => {profileSelectorData.profileId++; profileSelectorData.recomputeLayout = true;}
+        profileSelectorData.recomputeLayout = true;
+    }
+    if (profileSelectorData.recomputeLayout) {
+        buttons.previousProfile.autoCenter(windowWidth, windowHeight, -125, 0);
+        buttons.previousProfile.rendering = profileSelectorData.profileId > 0;
+        buttons.nextProfile.autoCenter(windowWidth, windowHeight, 125, 0);
+        buttons.nextProfile.rendering = profileSelectorData.profileId < 2;
+        profileSelectorData.recomputeLayout = false;
+    }
+    function drawSpotlight(color) {
+        noStroke();
+        color.setAlpha(64);
+        fill(color);
+        beginShape();
+        vertex(profileSelectorData.spotlightX, 0);
+        vertex(windowWidth/2-100, windowHeight/2+150);
+        vertex(windowWidth/2+100, windowHeight/2+150);
+        vertex(profileSelectorData.spotlightX, 0);
+        endShape(CLOSE);
+        ellipse((windowWidth/2), (windowHeight/2)+150, 200, 100);
+        fill(get(windowWidth/2, windowHeight/2+149));
+        ellipse((windowWidth/2), (windowHeight/2)+150, 200, 100);
+    }
+    const colors = [color(255, 0, 0), color(0, 255, 0), color(0, 0, 255)];
+    drawSpotlight(colors[profileSelectorData.profileId]);
+
+    hasClickable = buttonDrawAction();
+    cursor(hasClickable?'pointer':'default');
 }
 
 let validated = false;
-function validateMe() {
-    return fetch('/validate_me').then(response => response.json())
+async function validateMe() {
+    const response = await fetch('/validate_me');
+    return await response.json();
 }
 let validatationText = 'Signing in...'
 function validation() {
@@ -424,12 +470,7 @@ function draw() {
                 validation();
                 break;
             case "SelectProfile":
-                if (!validated) {
-                    resetStateTimer();
-                    state = "ValidateLogin";
-                    nextState = "SelectProfile";
-                    break;
-                }    
+                requiresLogin("SelectProfile");
                 profileSelector();
                 break;
             case "Error":
@@ -442,6 +483,7 @@ function draw() {
     } catch (e) {
         state = "Error";
         errorStateMsg = e.message;
+        console.error(e);
         resetStateTimer();
     }
 }

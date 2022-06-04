@@ -116,6 +116,7 @@ let state = "LoadingScreen";
 let nextState = "MainMenu"
 let stateInitializedTime = null;
 let stateFrames = 0;
+let skipFrame = false;
 
 let keymap = {}
 function keyPressed() {
@@ -131,6 +132,7 @@ function keyReleased() {
 function resetStateTimer() {
     stateInitializedTime = new Date();
     stateFrames = 0;
+    skipFrame = true;
 }
 
 function hold(milisec) {
@@ -159,7 +161,7 @@ async function loadTasks() {
 function loadingScreen() {
     let shx = 0;
     let shy = 0;
-    if (stateFrames === 1) {
+    if (stateFrames === 0) {
         loadTasks().then(() => {console.log("loadTasks completed")});
     }
     let stateTimeMS = (new Date()) - stateInitializedTime;
@@ -188,16 +190,43 @@ function loadingScreen() {
     }
     text("hold SHIFT for safe mode", (windowWidth/2)+shx, (windowHeight-10)+shy);
     if (loaded && stateTimeMS >= loadingScreenMinTime*1000) {
-        state = document.location.hash===''?"MainMenu":document.location.hash.substring(1);
+        nextState = document.location.hash===''?"MainMenu":document.location.hash.substring(1);
         safeMode = keymap[SHIFT];
         if (safeMode) {
             console.warn('Safe mode activated');
         }
-        resetStateTimer();
+        transitionData.run = true;
     } else if (loaded && loadState === 0) {
         loadState = 1;
         console.info('Loading completed with extra ' + diff + ' ms. Waiting to terminate load screen.')
     }
+}
+
+let transitionData = {
+    f: 0,
+    run: false,
+    direction: true
+}
+function drawTransition() {
+    let edge = windowWidth - transitionData.f;
+    if (transitionData.run) {
+        transitionData.f += windowWidth/15;
+    }
+    if (edge < 0) {
+        transitionData.run = false;
+        state = nextState;
+        transitionData.f = 0;
+        transitionData.direction = !transitionData.direction;
+        resetStateTimer();
+        return;
+    }
+    fill(255, 0, 0);
+    if (transitionData.direction) {
+        rect(edge, 0, windowWidth - edge, windowHeight);
+    } else {
+        rect(0, 0, edge, windowHeight);
+    }
+    endShape(CLOSE);
 }
 
 function extrapolateLineAngle(x1, y1, length, angle) {
@@ -294,13 +323,13 @@ let xPos;
 let yPos;
 function mainMenu() {
     let hasClickable = false;
-    if (stateFrames === 1) {
+    if (stateFrames === 0) {
         buttons.startButton = new Button("Start", 0, 0, 150, 50, color(0, 127, 255), color(0, 255, 255), color(255), color(0));
         buttons.startButton.rendering = true;
         buttons.startButton.on_click = function() {
             this.rendering = false;
-            resetStateTimer();
-            state = 'SelectProfile';  // Login automatically
+            nextState = 'SelectProfile';  // Login automatically
+            transitionData.run = true;
         }
         recomputePositioning = true;
     }
@@ -332,7 +361,7 @@ let errorReported = false;
 let errorCount = 0;
 function errorScreen(msg) {
     let hasClickable = false;
-    if (stateFrames === 1) {
+    if (stateFrames === 0) {
         for (const prop of Object.getOwnPropertyNames(buttons)) {
             delete buttons[prop];
         }
@@ -375,20 +404,30 @@ function errorScreen(msg) {
 let profileSelectorData = {
     spotlightX: 0,
     profileId: 0,
+    profilesCreated: [],
     recomputeLayout: false
 }
 function profileSelector() {
-    background(0);
+    background(20);
     let diff = windowWidth/2 - profileSelectorData.spotlightX;
     profileSelectorData.spotlightX += diff/20;
 
-    if (stateFrames === 1) {
+    if (stateFrames === 0) {
         buttons.previousProfile = new Button("<", 0, 0, 50, 50, color(0, 80, 0), color(0, 120, 0), color(255), color(255));
         buttons.previousProfile.rendering = false;
         buttons.previousProfile.on_click = () => {profileSelectorData.profileId--; profileSelectorData.recomputeLayout = true;}
         buttons.nextProfile = new Button(">", 0, 0, 50, 50, color(0, 80, 0), color(0, 120, 0), color(255), color(255));
         buttons.nextProfile.rendering = true;
         buttons.nextProfile.on_click = () => {profileSelectorData.profileId++; profileSelectorData.recomputeLayout = true;}
+
+        buttons.create = new Button("New Game", 0, 0, 200, 50, color(80, 80, 0), color(120, 120, 0), color(255), color(255));
+        buttons.create.rendering = true;
+        buttons.create.on_click = () => {
+            // createProfileOn(profileSelectorData.profileId);
+            console.log("create profile here");
+        }
+        buttons.load = new Button("Start", 0, 0, 200, 50, color(0, 80, 0), color(0, 120, 0), color(255), color(255));
+        buttons.load.rendering = true;
         profileSelectorData.recomputeLayout = true;
     }
     if (profileSelectorData.recomputeLayout) {
@@ -396,6 +435,11 @@ function profileSelector() {
         buttons.previousProfile.rendering = profileSelectorData.profileId > 0;
         buttons.nextProfile.autoCenter(windowWidth, windowHeight, 125, 0);
         buttons.nextProfile.rendering = profileSelectorData.profileId < 2;
+
+        buttons.create.autoCenter(windowWidth, windowHeight, 0, 275);
+        buttons.create.rendering = !profileSelectorData.profilesCreated.includes(profileSelectorData.profileId);
+        buttons.load.autoCenter(windowWidth, windowHeight, 0, 275);
+        buttons.load.rendering = profileSelectorData.profilesCreated.includes(profileSelectorData.profileId);
         profileSelectorData.recomputeLayout = false;
     }
     function drawSpotlight(color) {
@@ -426,13 +470,13 @@ async function validateMe() {
 }
 let validatationText = 'Signing in...'
 function validation() {
-    if (stateFrames === 1) {
+    if (stateFrames === 0) {
         validationText = 'Signing in...'
         validateMe().then((json) => {
             if (json.result === true) {
                 resetStateTimer();
                 validated = true;
-                state = nextState;
+                transitionData.run = true;
             } else {
                 validationText = 'Loading...'
                 document.location = '/login'
@@ -458,7 +502,6 @@ function requiresLogin(src) {
 let errorStateMsg = ''
 function draw() {
     try {
-        stateFrames += 1;
         switch (state) {
             case "LoadingScreen":
                 loadingScreen();
@@ -480,6 +523,12 @@ function draw() {
                 errorScreen(`State not found: "${state}"`);
                 break;
         }
+        if (!skipFrame) {
+            stateFrames += 1;
+        } else {
+            skipFrame = false;
+        }
+        drawTransition();
     } catch (e) {
         state = "Error";
         errorStateMsg = e.message;

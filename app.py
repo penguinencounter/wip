@@ -76,10 +76,6 @@ def validateme():
             'result': False,
             'reason': 'Invalid token'
         }
-    return {
-        'result': False,
-        'reason': 'Something went wrong!!'
-    }
 
 
 @app.route('/login', methods=('GET', 'POST'))

@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 import os
 import sys
+import shutil
 
 
 def argparser(argv: list):
@@ -20,8 +21,22 @@ def argparser(argv: list):
     return provided
 
 
+def run_args(args: list):
+    if 'staticbuild' in args:
+        print('Building static files')
+        if os.path.exists('out'):
+            os.remove('out')
+        os.mkdir('out')
+        shutil.copyfile("templates/main.html", "out/index.html")
+        shutil.copytree("static", "out/static")
+        print('build complete')
+        sys.exit(0)
+
+
 args = argparser(sys.argv)
-print(args)
+if len(args) > 0:
+    print(args)
+    run_args(args)
 
 app = Flask('app')
 if 'secret' in os.environ.keys():

@@ -8,12 +8,12 @@ configs = {
     'Build static website': f'{sys.executable} app.py -s'
 }
 
-print("+" + "="*73 + "+")
+print("+" + "-"*73 + "+")
 print("|" + f"Launch configurations ({len(configs)})".center(73) + "|")
 print("|" + " "*73 + "|")
 for i, key in enumerate(configs.keys()):
     print("|" + f" {i}: {key}".ljust(73) + "|")
-print("+" + "="*73 + "+")
+print("+" + "-"*73 + "+")
 while True:
     print(f"Select a configuration (0-{len(configs)-1}):")
     selection = input("?> ")

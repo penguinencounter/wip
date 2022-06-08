@@ -1,5 +1,13 @@
 from flask import Flask, render_template
 import os
+import sys
+
+
+def argparser(argv: list):
+    PARAMS = {'argv'}
+    for arg in argv[1:]:
+        if arg.startswith('-') and not arg.startswith('--'):
+
 
 app = Flask('app')
 if 'secret' in os.environ.keys():

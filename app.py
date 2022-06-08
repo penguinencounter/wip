@@ -23,13 +23,15 @@ def argparser(argv: list):
 
 def run_args(args: list):
     if 'staticbuild' in args:
-        print('Building static files')
+        print('Building static files...', flush=True)
         if os.path.exists('out'):
-            os.remove('out')
+            print('Clearing out old files...', flush=True)
+            shutil.rmtree('out')
         os.mkdir('out')
+        print('Copying files...', flush=True)
         shutil.copyfile("templates/main.html", "out/index.html")
         shutil.copytree("static", "out/static")
-        print('build complete')
+        print('Build complete')
         sys.exit(0)
 
 

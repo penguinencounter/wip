@@ -4,10 +4,24 @@ import sys
 
 
 def argparser(argv: list):
-    PARAMS = {'argv'}
+    PARAMS = {'staticbuild': ('s',)}
+    provided = []
+    def find_long_from_short(short):
+        for key, values in PARAMS.items():
+            if short in values:
+                return key
+
     for arg in argv[1:]:
         if arg.startswith('-') and not arg.startswith('--'):
+            # parse short
+            provided.append(find_long_from_short(arg[1:]))
+        elif arg.startswith('--'):
+            provided.append(arg[2:])
+    return provided
 
+
+args = argparser(sys.argv)
+print(args)
 
 app = Flask('app')
 if 'secret' in os.environ.keys():

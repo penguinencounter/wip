@@ -65,8 +65,11 @@ def run_args(args: list):
             print('Checking out publishing branch `pages-static-build`...')
             subprocess.run(shlex.split('git checkout pages-static-build'))
             print('Beginning write.')
+            
             for fp, content in files.items():
                 fp2 = fp.replace('out' + os.path.sep, '')
+                print(fp2)
+                input()
                 print(f'write {len(content)} char to {fp2}')
                 os.makedirs(os.sep.join(os.path.split(fp2)[:-1]), exist_ok=True)
                 with open(fp2, 'w') as f:

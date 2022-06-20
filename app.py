@@ -70,6 +70,7 @@ def run_args(args: list):
                 print(f'write {len(content)} char to {fp2}')
                 with open(fp2, 'w') as f:
                     f.write(content)
+            input('?= ')
             print('Committing...')
             subprocess.run(shlex.split('git add .'))
             subprocess.run(shlex.split('git commit -m "Publish static files: {}"'.format(time.asctime())))

@@ -1,8 +1,11 @@
 import re
+import subprocess
 from flask import Flask, render_template
 import os
 import sys
+import shlex
 import shutil
+import time
 
 
 def argparser(argv: list):
@@ -22,6 +25,11 @@ def argparser(argv: list):
     return provided
 
 
+def safe_to_switch():
+    runner = subprocess.run(shlex.split('git status --porcelain'), capture_output=True)
+    return runner.stdout.strip() == b'' and runner.returncode == 0
+
+
 def run_args(args: list):
     if 'staticbuild' in args:
         base = input("base for URLs? ")
@@ -34,8 +42,8 @@ def run_args(args: list):
         shutil.copyfile("templates/main.html", "out/index.html")
         shutil.copytree("static", "out/static")
         print('Patching URLs with "{}"...'.format(base), flush=True)
+        files = {}
         for cwd, _, f in os.walk('out'):
-            
             for fp in f:
                 if fp.endswith('.html') or fp.endswith('.mjs'):
                     print(f'Patching {fp} in {cwd}')
@@ -46,6 +54,21 @@ def run_args(args: list):
                     print(f'{fp}: {oldsize} -> {len(content)} char, +{len(content)/oldsize-1:.2%}')
                     with open(os.path.join(cwd, fp), 'w') as f:
                         f.write(content)
+                    files[os.path.join(cwd, fp)] = content
+        if safe_to_switch():
+            print('Checking out publishing branch `pages-static-build`...')
+            subprocess.run(shlex.split('git checkout -b pages-static-build'))
+            print('Beginning write.')
+            for fp, content in files.items():
+                with open(fp, 'w') as f:
+                    f.write(content)
+            print('Committing...')
+            subprocess.run(shlex.split('git add .'))
+            subprocess.run(shlex.split('git commit -m "Publish static files: {}"'.format(time.asctime())))
+            print('Pushing...')
+            subprocess.run(shlex.split('git push'))
+            print('Returning to previous branch...')
+            subprocess.run(shlex.split('git checkout -'))
         print('Build complete')
         sys.exit(0)
 

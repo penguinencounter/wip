@@ -66,7 +66,7 @@ def run_args(args: list):
             subprocess.run(shlex.split('git checkout pages-static-build'))
             print('Beginning write.')
             for fp, content in files.items():
-                fp2 = fp.replace('out' + os.sep, '')
+                fp2 = fp.replace('out' + os.path.sep, '')
                 print(f'write {len(content)} char to {fp2}')
                 with open(fp2, 'w') as f:
                     f.write(content)

@@ -69,13 +69,11 @@ def run_args(args: list):
             for fp, content in files.items():
                 fp2 = fp.replace('out' + os.path.sep, '')
                 print(fp2)
-                input()
                 print(f'write {len(content)} char to {fp2}')
                 if os.sep in fp2:
                     os.makedirs(os.sep.join(os.path.split(fp2)[:-1]), exist_ok=True)
                 with open(fp2, 'w') as f:
                     f.write(content)
-            input('?= ')
             print('Committing...')
             subprocess.run(shlex.split('git add .'))
             subprocess.run(shlex.split('git commit -m "Publish static files: {}"'.format(time.asctime())))

@@ -1,3 +1,4 @@
+import re
 from flask import Flask, render_template
 import os
 import sys
@@ -23,6 +24,7 @@ def argparser(argv: list):
 
 def run_args(args: list):
     if 'staticbuild' in args:
+        base = input("base for URLs? ")
         print('Building static files...', flush=True)
         if os.path.exists('out'):
             print('Clearing out old files...', flush=True)
@@ -31,6 +33,19 @@ def run_args(args: list):
         print('Copying files...', flush=True)
         shutil.copyfile("templates/main.html", "out/index.html")
         shutil.copytree("static", "out/static")
+        print('Patching URLs with "{}"...'.format(base), flush=True)
+        for cwd, _, f in os.walk('out'):
+            
+            for fp in f:
+                if fp.endswith('.html') or fp.endswith('.mjs'):
+                    print(f'Patching {fp} in {cwd}')
+                    with open(os.path.join(cwd, fp), 'r') as f:
+                        content = f.read()
+                    oldsize = len(content)
+                    content = re.sub(r"(['\"])(/static/.*)\1", fr"\1{base}\2\1", content)
+                    print(f'{fp}: {oldsize} -> {len(content)} char, +{len(content)/oldsize-1:.2%}')
+                    with open(os.path.join(cwd, fp), 'w') as f:
+                        f.write(content)
         print('Build complete')
         sys.exit(0)
 

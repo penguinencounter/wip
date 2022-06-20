@@ -30,7 +30,7 @@ def safe_to_switch():
     if runner.returncode != 0:
         print('git status failed - not a git repo or other problem')
         return False
-    if runner.stdout.strip != b'':
+    if runner.stdout.strip() != b'':
         print('git status not clean - not safe to switch')
         return False
     return True

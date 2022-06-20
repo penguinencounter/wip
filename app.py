@@ -27,7 +27,13 @@ def argparser(argv: list):
 
 def safe_to_switch():
     runner = subprocess.run(shlex.split('git status --porcelain'), capture_output=True)
-    return runner.stdout.strip() == b'' and runner.returncode == 0
+    if runner.returncode != 0:
+        print('git status failed - not a git repo or other problem')
+        return False
+    if runner.stdout.strip != b'':
+        print('git status not clean - not safe to switch')
+        return False
+    return True
 
 
 def run_args(args: list):
@@ -60,7 +66,9 @@ def run_args(args: list):
             subprocess.run(shlex.split('git checkout pages-static-build'))
             print('Beginning write.')
             for fp, content in files.items():
-                with open(fp, 'w') as f:
+                fp2 = fp.replace('out/', '')
+                print(f'write {len(content)} char to {fp2}')
+                with open(fp2, 'w') as f:
                     f.write(content)
             print('Committing...')
             subprocess.run(shlex.split('git add .'))

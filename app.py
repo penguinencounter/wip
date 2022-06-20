@@ -57,7 +57,7 @@ def run_args(args: list):
                     files[os.path.join(cwd, fp)] = content
         if safe_to_switch():
             print('Checking out publishing branch `pages-static-build`...')
-            subprocess.run(shlex.split('git checkout -b pages-static-build'))
+            subprocess.run(shlex.split('git checkout pages-static-build'))
             print('Beginning write.')
             for fp, content in files.items():
                 with open(fp, 'w') as f:

@@ -9,11 +9,9 @@
  */
 
 import renderer from '/static/renderer.mjs';
-import watchdog from '/static/watchdog.mjs';
 import {worstTickTime as wdWorstTickTime, confTimeout as wdConfTimeout} from '/static/watchdog.mjs';
 
 console.log(renderer);
-let canvas;
 let rendererCam;
 
 window.setup = function () {
@@ -76,17 +74,4 @@ window.draw = function () {
     let calcFPSPct = (frameRate()/60*100).toFixed(1)
     let zeroes = "0".repeat(5-calcFPSPct.toString().length)
     text(frameRate().toFixed(2) + "fps " + zeroes + calcFPSPct + "%", windowWidth , windowHeight - 50);
-    if (!isLooping()) {
-        noStroke();
-        fill(0, 0, 0, 128);
-        rect(0, 0, windowWidth, windowHeight);
-        fill(255);
-        textAlign(CENTER, CENTER);
-        textFont('monospace');
-        textSize(32);
-        text("Game rendering stopped", windowWidth/2, windowHeight/2);
-        textSize(16);
-        text("(but drawing was forced anyway)", windowWidth/2, windowHeight/2+32);
-    }
-    watchdog();
 }

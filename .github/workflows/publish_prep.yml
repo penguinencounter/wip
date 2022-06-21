@@ -32,10 +32,16 @@ jobs:
           # The target architecture (x86, x64) of the Python interpreter.
           architecture: x64 # optional
 
+      - name: Prepare git
+        run: |
+          git config --global user.email "gh-actions-penguinencounter-wip@example.com"
+          git config --global user.name "PenguinEncounter's Repository Management Github Actions Robot v1"
+          git fetch
+      
       # Runs a set of commands using the runners shell
       - name: Publish that boi
         run: |
-            pushd $GITHUB_WORKSPACE
-            python3 lightbuild.py
-            popd
+          pushd $GITHUB_WORKSPACE
+          python3 lightbuild.py
+          popd
             

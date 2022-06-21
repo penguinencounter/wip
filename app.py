@@ -9,7 +9,7 @@ import time
 
 
 def argparser(argv: list):
-    PARAMS = {'staticbuild': ('s',)}
+    PARAMS = {'staticbuild': ('s',), 'pages': ('p',)}
     provided = []
     def find_long_from_short(short):
         for key, values in PARAMS.items():
@@ -38,7 +38,7 @@ def safe_to_switch():
 
 def run_args(args: list):
     if 'staticbuild' in args:
-        base = input("base for URLs? ")
+        base = input("base for URLs? ") if 'pages' in args else '/wip'
         print('Building static files...', flush=True)
         if os.path.exists('out'):
             print('Clearing out old files...', flush=True)

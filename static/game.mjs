@@ -9,7 +9,7 @@
  */
 
 import renderer from '/static/renderer.mjs';
-import {worstTickTime as wdWorstTickTime, confTimeout as wdConfTimeout} from '/static/watchdog.mjs';
+import hypervisor from '/static/hypervisor.mjs';
 
 console.log(renderer);
 let rendererCam;
@@ -19,41 +19,28 @@ window.setup = function () {
     canvas = createCanvas(windowWidth, windowHeight);
     rendererCam = new renderer.Camera(0, 0, 1);
     renderer.setup();
+    rendererCam.settings.push(renderer.Camera.CENTER_ORIGIN);
+    hypervisor.apply();
 }
 window.windowResized = function () {
   resizeCanvas(windowWidth, windowHeight);
-}
-
-function drawTestPattern() {
-    fill(128, 128, 128);
-    stroke(128, 128, 128);
-    strokeWeight(4);
-    renderer.drawer.line(rendererCam, -2048, 0, 2048, 0);
-    renderer.drawer.line(rendererCam, 0, -2048, 0, 2048);
-    noStroke();
-    for (let i = -2048; i < 2048; i += 32) {
-        for (let j = -2048; j < 2048; j += 32) {
-            fill(0, 255, 0, 128)
-            renderer.drawer.rect(rendererCam, i, j, 16, 16);
-        }
-    }
 }
 
 let f = 0;
 
 window.draw = function () {
     f++;
-    rendererCam.xPos = 200;
-    rendererCam.yPos = 200;
-    rendererCam.zoom = mouseX;
+    rendererCam.zoom = sin(f/50)*3+1;
     textAlign(CENTER, CENTER);
     textFont('monospace');
     // 
     rendererCam.setupRenderState();
     background(0);
-    drawTestPattern();
     fill(255, 255, 255);
-    
+    stroke(255, 255, 255);
+    strokeWeight(10)
+    line(-500, 0, 500, 0);
+    line(0, -500, 0, 500);
     rendererCam.finish();
 
     fill(0, 128, 0, 128);
@@ -69,9 +56,11 @@ window.draw = function () {
     textSize(32);
     let dimStr = windowWidth + "x" + windowHeight
     text(dimStr, windowWidth, windowHeight - 18);
-    text(wdWorstTickTime + "/" + wdConfTimeout + "mspt (worst)", windowWidth-textWidth(dimStr)-20, windowHeight - 18);
     fill(255, 255, 255, (1-frameRate()/60)*128+128);
     let calcFPSPct = (frameRate()/60*100).toFixed(1)
     let zeroes = "0".repeat(5-calcFPSPct.toString().length)
     text(frameRate().toFixed(2) + "fps " + zeroes + calcFPSPct + "%", windowWidth , windowHeight - 50);
+
+    textAlign(CENTER, CENTER)
+    text(f, windowWidth/2, windowHeight-18);
 }

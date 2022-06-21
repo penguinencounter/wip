@@ -10,11 +10,14 @@ export class StateError extends Error {}
 export class Camera {
     static READY = 8641023341;   // randomly generated
     static RUNNING = 8641023342;
+
+    static CENTER_ORIGIN = 8641023343;
     constructor (xPos, yPos, zoom) {
         this.xPos = xPos;
         this.yPos = yPos;
         this.zoom = zoom;
-
+        
+        this.settings = []
         this.state = Camera.READY;
     }
     setupRenderState() {
@@ -22,6 +25,9 @@ export class Camera {
         this.state = Camera.RUNNING;
         push();
         translate(this.xPos, this.yPos);
+        if (this.settings.includes(Camera.CENTER_ORIGIN)) {
+            translate(windowWidth/2, windowHeight/2);
+        }
         scale(this.zoom);
     }
     finish() {

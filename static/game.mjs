@@ -8,8 +8,6 @@
  * 
  */
 
-// inconsequential change
-
 import renderer from '/wip/static/renderer.mjs';
 import hypervisor from '/wip/static/hypervisor.mjs';
 

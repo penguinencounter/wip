@@ -60,13 +60,12 @@ def run_args(args: list):
                     print(f'{oldsize} -> {len(content)} char, +{len(content)/oldsize-1:.2%}... ', flush=True, end='')
                     with open(os.path.join(cwd, fp), 'w') as f:
                         f.write(content)
-                    print(' done.', flush=True)
                 else:
                     print(f'Reading {fp} (in {cwd})... ', end='', flush=True)
                     with open(os.path.join(cwd, fp), 'rb') as f:
                         content = f.read()
-                    files[os.path.join(cwd, fp)] = content
-                    print(' done.', flush=True)
+                files[os.path.join(cwd, fp)] = content
+                print(' done.', flush=True)
         if safe_to_switch():
             print('Checking out publishing branch `pages-static-build`...')
             subprocess.run(shlex.split('git checkout pages-static-build'))

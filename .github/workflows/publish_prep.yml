@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Prepare Github Pages
 
 # Controls when the workflow will run
 on:
@@ -36,6 +36,6 @@ jobs:
       - name: Publish that boi
         run: |
             pushd $GITHUB_WORKSPACE
-            python3 app.py -s -p
+            python3 lightbuild.py
             popd
             

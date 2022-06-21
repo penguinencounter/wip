@@ -3,6 +3,8 @@ import shutil
 import shlex
 import subprocess
 import sys
+import time
+import re
 
 def safe_to_switch():
     runner = subprocess.run(shlex.split('git status --porcelain'), capture_output=True)

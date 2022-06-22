@@ -10,14 +10,15 @@
 
 import renderer from '/static/renderer.mjs';
 import hypervisor from '/static/hypervisor.mjs';
+import {lerp as lerp} from '/static/utils.mjs';
 
 console.log(renderer);
-let rendererCam;
+// let rendererCam;
 
 window.setup = function () {
     document.getElementById('wipeme').innerHTML = '';
     canvas = createCanvas(windowWidth, windowHeight);
-    rendererCam = new renderer.Camera(0, 0, 1);
+    window.rendererCam = new renderer.Camera(0, 0, 1);
     renderer.setup();
     rendererCam.settings.push(renderer.Camera.CENTER_ORIGIN);
     hypervisor.apply();
@@ -27,11 +28,15 @@ window.windowResized = function () {
 }
 
 let f = 0;
+let motion = 0;
 
 window.draw = function () {
     f++;
-    rendererCam.xPos = rendererCam.xPos + ((mouseX-windowWidth/2)-rendererCam.xPos)/10;
-    rendererCam.yPos = rendererCam.yPos + ((mouseY-windowHeight/2)-rendererCam.yPos)/10;
+    if (pmouseX === mouseX && pmouseY === mouseY) motion = 0;
+    else motion++;
+    rendererCam.xPos = lerp(rendererCam.xPos, mouseX-windowWidth/2, 10);
+    rendererCam.yPos = lerp(rendererCam.yPos, mouseY-windowHeight/2, 10);
+    rendererCam.zoom = lerp(rendererCam.zoom, motion/100+1, 10);
     textAlign(CENTER, CENTER);
     textFont('monospace');
     // 

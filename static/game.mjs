@@ -35,7 +35,7 @@ window.draw = function () {
     textFont('monospace');
     // 
     rendererCam.setupRenderState();
-    background(0);
+    background(128);
     fill(255, 255, 255);
     stroke(255, 255, 255);
     strokeWeight(10)

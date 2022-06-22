@@ -24,11 +24,11 @@ export class Camera {
         if (this.state == Camera.RUNNING) throw new StateError("Camera already started! finish() first.");
         this.state = Camera.RUNNING;
         push();
-        translate(this.xPos, this.yPos);
         if (this.settings.includes(Camera.CENTER_ORIGIN)) {
             translate(windowWidth/2, windowHeight/2);
         }
         scale(this.zoom);
+        translate(this.xPos, this.yPos);
     }
     finish() {
         if (this.state == Camera.READY) throw new StateError("Camera not started! setupRenderState() first.");

@@ -30,7 +30,8 @@ let f = 0;
 
 window.draw = function () {
     f++;
-    rendererCam.zoom = sin(f/50)*3+1;
+    rendererCam.xPos = rendererCam.xPos + ((mouseX-windowWidth/2)-rendererCam.xPos)/10;
+    rendererCam.yPos = rendererCam.yPos + ((mouseY-windowHeight/2)-rendererCam.yPos)/10;
     textAlign(CENTER, CENTER);
     textFont('monospace');
     // 
@@ -39,6 +40,7 @@ window.draw = function () {
     fill(255, 255, 255);
     stroke(255, 255, 255);
     strokeWeight(10)
+    rect(-1010, -10, 20, 20);
     line(-500, 0, 500, 0);
     line(0, -500, 0, 500);
     rendererCam.finish();

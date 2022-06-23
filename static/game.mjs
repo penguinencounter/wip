@@ -11,6 +11,7 @@
 import renderer from '/wip/static/renderer.mjs';
 import hypervisor from '/wip/static/hypervisor.mjs';
 import {lerp as lerp} from '/wip/static/utils.mjs';
+import {gridRenderer as gridRenderer} from '/wip/static/tiles.mjs';
 
 console.log(renderer);
 // let rendererCam;
@@ -24,7 +25,7 @@ window.setup = function () {
     hypervisor.apply();
 }
 window.windowResized = function () {
-  resizeCanvas(windowWidth, windowHeight);
+    resizeCanvas(windowWidth, windowHeight);
 }
 
 let f = 0;
@@ -48,6 +49,7 @@ window.draw = function () {
     rect(-1010, -10, 20, 20);
     line(-500, 0, 500, 0);
     line(0, -500, 0, 500);
+    gridRenderer(rendererCam, color(0, 0, 0, 128), 50);
     rendererCam.finish();
 
     fill(0, 128, 0, 128);

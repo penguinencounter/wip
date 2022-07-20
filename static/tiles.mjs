@@ -1,5 +1,5 @@
 export function gridRenderer(cam, color, size) {
-    let isize = size??25;
+    let isize = size??64;
     stroke(color)
     strokeWeight(1);
     // start at 0, 0 world and draw a grid; however only render the visible part of the grid
@@ -17,9 +17,9 @@ export function gridRenderer(cam, color, size) {
     let x1 = Math.ceil((ex+cw)/isize);
     let y1 = Math.ceil((ey+ch)/isize);
     for (let x = x0; x <= x1; x++) {
-        line(x*isize, cy+cw, x*isize, cy-cw);
+        line(x*isize, cy+ch, x*isize, cy-ch);
     }
     for (let y = y0; y <= y1; y++) {
-        line(cx+ch, y*isize, cx-ch, y*isize);
+        line(cx+cw, y*isize, cx-cw, y*isize);
     }
 }

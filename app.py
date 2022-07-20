@@ -1,3 +1,4 @@
+import random
 import re
 import subprocess
 from flask import Flask, render_template
@@ -6,6 +7,9 @@ import sys
 import shlex
 import shutil
 import time
+
+
+lag = 0
 
 
 def argparser(argv: list):
@@ -110,6 +114,11 @@ simlag = 0
 @app.route('/')
 def main():
     return render_template('main.html')
+
+@app.after_request
+def after(res):
+    time.sleep(random.randint(0, lag*1000)/1000)
+    return res
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)

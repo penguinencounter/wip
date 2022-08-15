@@ -29,17 +29,6 @@ def argparser(argv: list):
     return provided
 
 
-def safe_to_switch():
-    runner = subprocess.run(shlex.split('git status --porcelain'), capture_output=True)
-    if runner.returncode != 0:
-        print('git status failed - not a git repo or other problem')
-        return False
-    if runner.stdout.strip() != b'':
-        print('git status not clean - not safe to switch')
-        return False
-    return True
-
-
 def run_args(args: list):
     if 'staticbuild' in args:
         # side effects only

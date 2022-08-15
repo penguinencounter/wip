@@ -3,7 +3,7 @@
  * "es6 is pretty cool"
  * 
  * no exports
- * @requires p5.min.js 
+ * @a p5.js
  *     impl note: p5 doesn't have modules compat. place this after or don't defer p5.min.js loading
  * 
  */
@@ -31,6 +31,10 @@ window.setup = function () {
     window.rendererCam = new renderer.Camera(0, 0, 1);
     renderer.setup();
     rendererCam.settings.push(renderer.Camera.CENTER_ORIGIN);
+
+    // recompute camera position
+    gameWorld.computeVisible(rendererCam);
+
     hypervisor.apply();
     let load = function(j) {
         let k = 0

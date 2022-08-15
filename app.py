@@ -1,6 +1,8 @@
 import random
 import re
 import subprocess
+
+import flask
 from flask import Flask, render_template, send_from_directory
 import os
 import sys
@@ -8,13 +10,13 @@ import shlex
 import shutil
 import time
 
-
 lag = 0
 
 
 def argparser(argv: list):
     PARAMS = {'staticbuild': ('s',), 'pages': ('p',)}
     provided = []
+
     def find_long_from_short(short):
         for key, values in PARAMS.items():
             if short in values:
@@ -50,13 +52,33 @@ else:
     app.secret_key = 'default_please_dont_use_this_in_prod'
 simlag = 0
 
+
 @app.route('/')
 def main():
     return render_template('main.html')
 
+
+@app.route(app.static_url_path + '/' + '<path:path>' + '.js')
+def js_mime_type(path):
+    return flask.send_from_directory(
+        directory=app.static_folder,
+        filename=path + '.js',
+        mimetype='text/javascript'
+    )
+
+
+@app.route(app.static_url_path + '/' + '<path:path>' + '.mjs')
+def mjs_mime_type(path):
+    return flask.send_from_directory(
+        directory=app.static_folder,
+        filename=path + '.mjs',
+        mimetype='text/javascript'
+    )
+
+
 @app.after_request
-def after(res):
-    time.sleep(random.randint(0, lag*1000)/1000)
+def after(res: flask.Response):
+    time.sleep(random.randint(0, lag * 1000) / 1000)
     return res
 
 

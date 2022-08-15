@@ -4,6 +4,59 @@ let wasMousePressed = false;
 let overlayState = false;
 let cachedImage = null;
 
+let eventHandlers = {};
+let eventQueue = [];
+
+let ExecutionOrder = {
+    BEFORE: -1,
+    AFTER: 1
+}
+
+export function registerEventHandler(eventName, handler, order, priority) {
+    order = order ?? ExecutionOrder.AFTER;
+    priority = priority ?? 0;
+    if (!eventHandlers[eventName]) {
+        eventHandlers[eventName] = [];
+    }
+    eventHandlers[eventName].push({handler: handler, order: order, priority: priority});
+}
+function genericHandleEvent(name, data) {
+    eventQueue.push({name: name, data: data});
+}
+
+function initializeFrameEventQueue() {
+    let toActivate = {};
+    for (let event of eventQueue) {
+        if (!eventHandlers[event.name]) {
+            eventHandlers[event.name] = [];
+        }
+        for (let handler of eventHandlers[event.name]) {
+            if (!toActivate[handler.order]) {
+                toActivate[handler.order] = [];
+            }
+            toActivate[handler.order].push({handler: handler, context: event.data});
+        }
+    }
+    let build = {
+        queue: eventQueue.slice(),
+        todo: toActivate,
+        activate: currentExecutionPoint => {
+            if (toActivate[currentExecutionPoint] === undefined) return
+            let allQueuedHandlers = toActivate[currentExecutionPoint].sort((a, b) => a.handler.priority - b.handler.priority)
+                .reverse();
+            console.log(allQueuedHandlers);
+            for (let handler of allQueuedHandlers) {
+                handler.handler.handler(handler.context)  // Nice variable names.
+            }
+        }
+    }
+    eventQueue = [];
+    return build
+}
+
+
+window.mouseWheel = e => genericHandleEvent('scroll', e)
+
 export function hypervisorOverlay(expanded, renderCachedImage) {
     if (renderCachedImage) {
         if (cachedImage.width !== windowWidth || cachedImage.height !== windowHeight) {
@@ -14,12 +67,12 @@ export function hypervisorOverlay(expanded, renderCachedImage) {
                 fill(255, 0, 0);
                 textSize(32);
                 textAlign(CENTER, CENTER);
-                text("Cached image is no longer valid", windowWidth/2, windowHeight/2);
-                text("(Step or unfreeze to fix)", windowWidth/2, windowHeight/2+40);
+                text("Cached image is no longer valid", windowWidth / 2, windowHeight / 2);
+                text("(Step or unfreeze to fix)", windowWidth / 2, windowHeight / 2 + 40);
                 textSize(16);
                 fill(128);
-                text("run configureHypervisor(\"reloadOnInvalidCache\", true)", windowWidth/2, windowHeight/2+80);
-                text("to automatically redraw when cache becomes invalid", windowWidth/2, windowHeight/2+95);
+                text("run configureHypervisor(\"reloadOnInvalidCache\", true)", windowWidth / 2, windowHeight / 2 + 80);
+                text("to automatically redraw when cache becomes invalid", windowWidth / 2, windowHeight / 2 + 95);
             }
         } else {
             image(cachedImage, 0, 0, windowWidth, windowHeight);
@@ -29,64 +82,64 @@ export function hypervisorOverlay(expanded, renderCachedImage) {
     noStroke();
     let returnValue = false;
     if (expanded) {
-        rect(windowWidth-400, 0, windowWidth, windowHeight);
-        let hoverCollapseButton = mouseX > windowWidth-450 && mouseX < windowWidth-400 && mouseY > windowHeight/2-50 && mouseY < windowHeight/2+50;
-        rect(windowWidth-(hoverCollapseButton?430:450), windowHeight/2-50, hoverCollapseButton?30:50, 100);
+        rect(windowWidth - 400, 0, windowWidth, windowHeight);
+        let hoverCollapseButton = mouseX > windowWidth - 450 && mouseX < windowWidth - 400 && mouseY > windowHeight / 2 - 50 && mouseY < windowHeight / 2 + 50;
+        rect(windowWidth - (hoverCollapseButton ? 430 : 450), windowHeight / 2 - 50, hoverCollapseButton ? 30 : 50, 100);
         fill(255);
         textSize(48);
         textAlign(CENTER, CENTER);
-        text(">", windowWidth-(hoverCollapseButton?415:435), windowHeight/2);
+        text(">", windowWidth - (hoverCollapseButton ? 415 : 435), windowHeight / 2);
         returnValue = hoverCollapseButton && mouseIsPressed && !wasMousePressed;
         // actual tools and stuff
         // pause/resume button
         if (hypervisor.isTicking) {
             fill(255, 128, 0);
-            rect(windowWidth-390, 10, 380, 100);
+            rect(windowWidth - 390, 10, 380, 100);
             fill(255);
-            rect(windowWidth-370, 30, 15, 60);
-            rect(windowWidth-340, 30, 15, 60);
+            rect(windowWidth - 370, 30, 15, 60);
+            rect(windowWidth - 340, 30, 15, 60);
             textSize(75);
             textAlign(CENTER, CENTER);
-            text("Pause", windowWidth-160, 60);
+            text("Pause", windowWidth - 160, 60);
         } else {
             fill(0, 128, 0);
-            rect(windowWidth-390, 10, 380, 100);
+            rect(windowWidth - 390, 10, 380, 100);
             fill(255);
-            triangle(windowWidth-370, 30, windowWidth-370, 90, windowWidth-325, 60);
+            triangle(windowWidth - 370, 30, windowWidth - 370, 90, windowWidth - 325, 60);
             textSize(75);
             textAlign(CENTER, CENTER);
-            text("Resume", windowWidth-160, 60);
+            text("Resume", windowWidth - 160, 60);
         }
-        if (mouseX > windowWidth-390 && mouseX < windowWidth-10 && mouseY > 10 && mouseY < 110 && mouseIsPressed && !wasMousePressed) {
+        if (mouseX > windowWidth - 390 && mouseX < windowWidth - 10 && mouseY > 10 && mouseY < 110 && mouseIsPressed && !wasMousePressed) {
             freeze();
         }
 
         // step button
         fill(128)
-        rect(windowWidth-390, 120, 100, 100);
-        fill(hypervisor.isTicking?192:255)
-        triangle(windowWidth-370, 140, windowWidth-370, 200, windowWidth-325, 170);
-        rect(windowWidth-325, 140, 15, 60);
-        if (mouseX > windowWidth-390 && mouseX < windowWidth-290 && mouseY > 120 && mouseY < 220 && mouseIsPressed && !wasMousePressed && !hypervisor.isTicking) {
+        rect(windowWidth - 390, 120, 100, 100);
+        fill(hypervisor.isTicking ? 192 : 255)
+        triangle(windowWidth - 370, 140, windowWidth - 370, 200, windowWidth - 325, 170);
+        rect(windowWidth - 325, 140, 15, 60);
+        if (mouseX > windowWidth - 390 && mouseX < windowWidth - 290 && mouseY > 120 && mouseY < 220 && mouseIsPressed && !wasMousePressed && !hypervisor.isTicking) {
             step();
         }
 
         // hold-to-play button
-        if (mouseX > windowWidth-280 && mouseX < windowWidth-180 && mouseY > 120 && mouseY < 220 && mouseIsPressed && !hypervisor.isTicking) {
+        if (mouseX > windowWidth - 280 && mouseX < windowWidth - 180 && mouseY > 120 && mouseY < 220 && mouseIsPressed && !hypervisor.isTicking) {
             step();
             fill(0, 128, 0);
         } else {
             fill(128);
         }
-        
-        rect(windowWidth-280, 120, 100, 100);
-        fill(hypervisor.isTicking?192:255)
-        triangle(windowWidth-260, 140, windowWidth-260, 200, windowWidth-215, 170);
-        triangle(windowWidth-240, 140, windowWidth-240, 200, windowWidth-195, 170);
-        rect(windowWidth-325, 140, 15, 60);
+
+        rect(windowWidth - 280, 120, 100, 100);
+        fill(hypervisor.isTicking ? 192 : 255)
+        triangle(windowWidth - 260, 140, windowWidth - 260, 200, windowWidth - 215, 170);
+        triangle(windowWidth - 240, 140, windowWidth - 240, 200, windowWidth - 195, 170);
+        rect(windowWidth - 325, 140, 15, 60);
 
         // slow playback
-        if (mouseX > windowWidth-170 && mouseX < windowWidth-10 && mouseY > 120 && mouseY < 220 && mouseIsPressed && !hypervisor.isTicking) {
+        if (mouseX > windowWidth - 170 && mouseX < windowWidth - 10 && mouseY > 120 && mouseY < 220 && mouseIsPressed && !hypervisor.isTicking) {
             if (hypervisor.runningFor % 8 == 0) {
                 step();
             }
@@ -96,25 +149,25 @@ export function hypervisorOverlay(expanded, renderCachedImage) {
         } else {
             fill(128);
         }
-        
-        rect(windowWidth-170, 120, 160, 100);
-        fill(hypervisor.isTicking?192:255)
-        triangle(windowWidth-150, 140, windowWidth-150, 200, windowWidth-85, 170);
-        rect(windowWidth-325, 140, 15, 60);
+
+        rect(windowWidth - 170, 120, 160, 100);
+        fill(hypervisor.isTicking ? 192 : 255)
+        triangle(windowWidth - 150, 140, windowWidth - 150, 200, windowWidth - 85, 170);
+        rect(windowWidth - 325, 140, 15, 60);
         push();
-        translate(windowWidth-42, 170);
-        rotate(PI/2);
+        translate(windowWidth - 42, 170);
+        rotate(PI / 2);
         textSize(28);
         textAlign(CENTER, CENTER)
         text("0.125x", 0, 0);
         pop();
     } else {
-        let hover = mouseX > windowWidth-30 && mouseX < windowWidth && mouseY > windowHeight/2-50 && mouseY < windowHeight/2+50;
-        rect(windowWidth-(hover?50:30), windowHeight/2-50, hover?50:30, 100);
+        let hover = mouseX > windowWidth - 30 && mouseX < windowWidth && mouseY > windowHeight / 2 - 50 && mouseY < windowHeight / 2 + 50;
+        rect(windowWidth - (hover ? 50 : 30), windowHeight / 2 - 50, hover ? 50 : 30, 100);
         fill(255);
         textSize(48);
         textAlign(CENTER, CENTER);
-        text("<", windowWidth-(hover?35:15), windowHeight/2);
+        text("<", windowWidth - (hover ? 35 : 15), windowHeight / 2);
         returnValue = hover && mouseIsPressed && !wasMousePressed;
     }
     wasMousePressed = mouseIsPressed;
@@ -123,11 +176,17 @@ export function hypervisorOverlay(expanded, renderCachedImage) {
 
 export function apply() {
     // monkey time
-    let actualTickFunc = window.draw;
+    let actualActualTickFunc = window.draw;
+    let tickWithEvents = () => {
+        let events = initializeFrameEventQueue();
+        events.activate(ExecutionOrder.BEFORE);
+        actualActualTickFunc();
+        events.activate(ExecutionOrder.AFTER);
+    }
     window.draw = function () {
-        hypervisor.runningFor ++;
+        hypervisor.runningFor++;
         if (hypervisor.isTicking) {
-            actualTickFunc();
+            tickWithEvents();
             cachedImage = get()
         }
         if (hypervisor.runTo > 0) {
@@ -143,13 +202,13 @@ export function apply() {
             if (hypervisor.warp) {
                 console.info("Warping " + hypervisor.runTo + " frames");
                 for (let i = 0; i < hypervisor.runTo; i++) {
-                    actualTickFunc();
+                    tickWithEvents();
                 }
                 cachedImage = get();
                 hypervisor.runTo = 0;
                 hypervisor.warp = false;
             } else {
-                actualTickFunc();
+                tickWithEvents();
                 hypervisor.runTo--;
                 cachedImage = get();
             }
@@ -159,17 +218,17 @@ export function apply() {
     hypervisor.isApplied = true;
 }
 
-window.freeze = function() {
+window.freeze = function () {
     hypervisor.isTicking = !hypervisor.isTicking;
     console.info("Game is now " + (hypervisor.isTicking ? "unfrozen" : "frozen"));
 }
 
-window.step = function(frames, instantly) {
-    hypervisor.runTo = frames??1;
-    hypervisor.warp = instantly??false;
+window.step = function (frames, instantly) {
+    hypervisor.runTo = frames ?? 1;
+    hypervisor.warp = instantly ?? false;
 }
 
-window.configureHypervisor = function(configName, value) {
+window.configureHypervisor = function (configName, value) {
     hypervisor.behaviors[configName] = value;
 }
 
@@ -185,8 +244,11 @@ let hypervisor = {
     behaviors: {
         stepWhileRunning: "pause",
         reloadOnInvalidCache: false
-    }
+    },
+    registerEventHandler: registerEventHandler
 }
+
+window.hypervisor = hypervisor;
 
 export default hypervisor
 

@@ -38,7 +38,7 @@ let imageAssetsFailed = 0;
 let imageAssetsTotal = 0;
 export function loadImageAsset(name, path, andThen) {
     imageAssetsTotal++;
-    let finishedTarget = andThen??(a => {});
+    let finishedTarget = andThen??(() => {});
     loader_log['Loading image: ' + name] = 0;
     assets[name] = loadImage(path, () => {
         imageAssetsLoaded ++;
@@ -55,7 +55,7 @@ let jsonAssetsFailed = 0;
 let jsonAssetsTotal = 0;
 export function loadJSONAsset(name, path, andThen) {
     jsonAssetsTotal++;
-    let finishedTarget = andThen??(a => {});
+    let finishedTarget = andThen??(() => {});
     assets[name] = null
     loader_log['Loading JSON object: ' + name] = 0;
     fetch(path).then(r => r.json()).then(json => {
@@ -63,14 +63,14 @@ export function loadJSONAsset(name, path, andThen) {
         jsonAssetsLoaded ++;
         finishedTarget(json);
         loader_log['Loaded JSON object: ' + name] = 0;
-    }).catch(e => {
+    }).catch(() => {
         jsonAssetsFailed ++;
         loader_log['Failed to load JSON object: ' + name] = 0;
     })
 }
 
 export function done() {
-    return imageAssetsLoaded == imageAssetsTotal && jsonAssetsLoaded == jsonAssetsTotal;
+    return imageAssetsLoaded + imageAssetsFailed === imageAssetsTotal && jsonAssetsLoaded + jsonAssetsFailed === jsonAssetsTotal;
 }
 
 let imageDrawPct = 0;

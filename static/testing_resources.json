@@ -1,15 +1,6 @@
 [
     {
-        "name": "player",
-        "path": "/static/assets/player.png"
-    },{
-        "name": "player2",
-        "path": "/static/assets/player2.png"
-    },{
-        "name": "player3",
-        "path": "/static/assets/player3.png"
-    },{
-        "name": "player4",
-        "path": "/static/assets/player4.png"
+        "name": "grass",
+        "path": "/wip/static/assets/grassv1.png"
     }
 ]

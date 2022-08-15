@@ -11,19 +11,23 @@
 import renderer from '/wip/static/renderer.mjs';
 import hypervisor from '/wip/static/hypervisor.mjs';
 import {lerp as lerp} from '/wip/static/utils.mjs';
-import {gridRenderer as gridRenderer} from '/wip/static/tiles.mjs';
+import {gridRenderer as gridRenderer, Tile as Tile, World as World} from '/wip/static/tiles.mjs';
 import Player from '/wip/static/player.mjs';
 import {
     loadingAssetsScreen as assetsScreen, loadImageAsset as imageLoader,
-    loadJSONAsset as jsonLoader, done as doneLoading
+    loadJSONAsset as jsonLoader, done as doneLoading,
+    default as gameAssets
 } from '/wip/static/loader.mjs';
+import Monke from '/wip/static/Monke.mjs';
 
 console.log(renderer);
 // let rendererCam;
+let gameWorld = new World();
 
 window.setup = function () {
+    // add some tiles or something
     document.getElementById('wipeme').innerHTML = '';
-    canvas = createCanvas(windowWidth, windowHeight);
+    window.canvas = createCanvas(windowWidth, windowHeight);
     window.rendererCam = new renderer.Camera(0, 0, 1);
     renderer.setup();
     rendererCam.settings.push(renderer.Camera.CENTER_ORIGIN);
@@ -35,14 +39,19 @@ window.setup = function () {
             k++;
         }
     }
-    jsonLoader("testing_resources", "/wip/static/testing_resources.json", load);
+    jsonLoader("testing_resources", "/wip/static/testing_resources.json", Monke.mix(load, () => {
+        gameWorld.putTile(new Tile(0, 0, gameAssets.getImage('grass')));
+        gameWorld.putTile(new Tile(64, 0, gameAssets.getImage('grass')));
+        gameWorld.putTile(new Tile(-64, 0, gameAssets.getImage('grass')));
+        gameWorld.putTile(new Tile(0, 64, gameAssets.getImage('grass')));
+        gameWorld.putTile(new Tile(0, -64, gameAssets.getImage('grass')));
+    }));
 }
 window.windowResized = function () {
     resizeCanvas(windowWidth, windowHeight);
 }
 
 let f = 0;
-let motion = 0;
 let me = new Player(0, 0);
 
 window.draw = function () {
@@ -51,11 +60,8 @@ window.draw = function () {
         assetsScreen();
         return;
     }
-    if (pmouseX === mouseX && pmouseY === mouseY) motion = 0;
-    else motion++;
     rendererCam.xPos = lerp(rendererCam.xPos, mouseX-windowWidth/2, 10);
     rendererCam.yPos = lerp(rendererCam.yPos, mouseY-windowHeight/2, 10);
-    rendererCam.zoom = lerp(rendererCam.zoom, motion/100+1, 10);
     textAlign(CENTER, CENTER);
     textFont('monospace');
     // 
@@ -67,6 +73,9 @@ window.draw = function () {
     rect(-1010, -10, 20, 20);
     line(-500, 0, 500, 0);
     line(0, -500, 0, 500);
+
+    gameWorld.draw(rendererCam);
+
     me.draw()
     gridRenderer(rendererCam, color(0, 0, 0, 128), 64);
     rendererCam.finish();

@@ -44,6 +44,7 @@ jobs:
       run: |
         pushd $GITHUB_WORKSPACE/static
         rm p5.js p5.min.js
+        ls
         popd
 
     # Initializes the CodeQL tools for scanning.

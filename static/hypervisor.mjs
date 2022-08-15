@@ -7,7 +7,7 @@ let cachedImage = null;
 let eventHandlers = {};
 let eventQueue = [];
 
-let ExecutionOrder = {
+window.ExecutionOrder = {
     BEFORE: -1,
     AFTER: 1
 }
@@ -42,9 +42,9 @@ function initializeFrameEventQueue() {
         todo: toActivate,
         activate: currentExecutionPoint => {
             if (toActivate[currentExecutionPoint] === undefined) return
-            let allQueuedHandlers = toActivate[currentExecutionPoint].sort((a, b) => a.handler.priority - b.handler.priority)
+            let allQueuedHandlers = toActivate[currentExecutionPoint]
+                .sort((a, b) => a.handler.priority - b.handler.priority)
                 .reverse();
-            console.log(allQueuedHandlers);
             for (let handler of allQueuedHandlers) {
                 handler.handler.handler(handler.context)  // Nice variable names.
             }

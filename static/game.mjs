@@ -24,6 +24,9 @@ console.log(renderer);
 // let rendererCam;
 let gameWorld = new World();
 
+let MIN_ZOOM = .25;
+let MAX_ZOOM = 4;
+
 window.setup = function () {
     // add some tiles or something
     document.getElementById('wipeme').innerHTML = '';
@@ -34,9 +37,13 @@ window.setup = function () {
 
     // recompute camera position
     gameWorld.computeVisible(rendererCam);
-
+    hypervisor.registerEventHandler('scroll', e => {
+        let dir = e.deltaY > 0 ? 1.2 : .8;
+        camTarget.zoom *= dir;
+        camTarget.zoom = Math.min(Math.max(camTarget.zoom, MIN_ZOOM), MAX_ZOOM);
+    })
     hypervisor.apply();
-    let load = function(j) {
+    let load = j => {
         let k = 0
         for (let i of j) {
             imageLoader(i.name, i.path);
@@ -44,11 +51,14 @@ window.setup = function () {
         }
     }
     jsonLoader("testing_resources", "/wip/static/testing_resources.json", Monke.mix(load, () => {
-        gameWorld.putTile(new Tile(0, 0, gameAssets.getImage('grass')));
-        gameWorld.putTile(new Tile(64, 0, gameAssets.getImage('grass')));
-        gameWorld.putTile(new Tile(-64, 0, gameAssets.getImage('grass')));
-        gameWorld.putTile(new Tile(0, 64, gameAssets.getImage('grass')));
-        gameWorld.putTile(new Tile(0, -64, gameAssets.getImage('grass')));
+        for (let xPos = -(64*16); xPos < 64*16; xPos += 64) {
+            for (let yPos = -(64*16); yPos < 64*16; yPos += 64) {
+                gameWorld.putTile(new Tile(xPos, yPos, gameAssets.getImage('grass')));
+            }
+        }
+        // drop cache
+        console.info('Forcing visibility computation');
+        gameWorld.computeVisible(rendererCam);
     }));
 }
 window.windowResized = function () {
@@ -59,7 +69,8 @@ let f = 0;
 let me = new Player(0, 0);
 window.camTarget = {
     x: 0,
-    y: 0
+    y: 0,
+    zoom: 1
 }
 
 window.draw = function () {
@@ -70,6 +81,7 @@ window.draw = function () {
     }
     rendererCam.xPos = lerp(rendererCam.xPos, camTarget.x, 10);
     rendererCam.yPos = lerp(rendererCam.yPos, camTarget.y, 10);
+    rendererCam.zoom = lerp(rendererCam.zoom, camTarget.zoom, 5);
     textAlign(CENTER, CENTER);
     textFont('monospace');
     // 

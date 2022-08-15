@@ -53,6 +53,10 @@ window.windowResized = function () {
 
 let f = 0;
 let me = new Player(0, 0);
+window.camTarget = {
+    x: 0,
+    y: 0
+}
 
 window.draw = function () {
     f++;
@@ -60,8 +64,8 @@ window.draw = function () {
         assetsScreen();
         return;
     }
-    rendererCam.xPos = lerp(rendererCam.xPos, mouseX-windowWidth/2, 10);
-    rendererCam.yPos = lerp(rendererCam.yPos, mouseY-windowHeight/2, 10);
+    rendererCam.xPos = lerp(rendererCam.xPos, camTarget.x, 10);
+    rendererCam.yPos = lerp(rendererCam.yPos, camTarget.y, 10);
     textAlign(CENTER, CENTER);
     textFont('monospace');
     // 
@@ -79,6 +83,12 @@ window.draw = function () {
     me.draw()
     gridRenderer(rendererCam, color(0, 0, 0, 128), 64);
     rendererCam.finish();
+
+
+    stroke(255, 255, 255, 128);
+    strokeWeight(3);
+    line(0, windowHeight/2, windowWidth, windowHeight/2);
+    line(windowWidth/2, 0, windowWidth/2, windowHeight);
 
     fill(0, 128, 0, 128);
     noStroke();

@@ -40,6 +40,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Drop p5.js + p5.min.js
+      run: |
+        pushd $GITHUB_WORKSPACE/static
+        rm p5.js p5.min.js
+        popd
+
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2

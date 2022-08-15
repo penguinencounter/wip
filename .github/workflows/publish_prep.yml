@@ -1,6 +1,4 @@
-# This is a basic workflow to help you get started with Actions
-
-name: Prepare Github Pages
+name: Static Build Preprocessing
 
 # Controls when the workflow will run
 on:
@@ -11,9 +9,7 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -21,7 +17,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v3
       
       - name: Setup Python
@@ -32,13 +28,12 @@ jobs:
           # The target architecture (x86, x64) of the Python interpreter.
           architecture: x64 # optional
 
-      - name: Prepare Git (fetch, etc.)
+      - name: Configure Git
         run: |
           git config --global user.email "gh-actions-penguinencounter-wip@example.com"
           git config --global user.name "PenguinEncounter's Repository Management Github Actions Robot v1"
           git fetch
       
-      # Runs a set of commands using the runners shell
       - name: Build and Publish
         run: |
           pushd $GITHUB_WORKSPACE

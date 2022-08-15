@@ -1,7 +1,7 @@
 /**
  * renderer.mjs
  * "who knew tilemaps were so hard"
- * @exports camera as default
+ * @exports camera and other things
  * 
  */
 
@@ -39,9 +39,16 @@ export class Camera {
     isVisible(x, y, w, h, ww, wh) {
         let modified_x = x * this.zoom + this.xPos;
         let modified_y = y * this.zoom + this.yPos;
+
+        if (this.settings.includes(Camera.CENTER_ORIGIN)) {
+            modified_x += ww / 2;
+            modified_y += wh / 2;
+        }
+
         let modified_w = w * this.zoom;
         let modified_h = h * this.zoom;
-        return (modified_x + modified_w > 0 && modified_x < ww && modified_y + modified_h > 0 && modified_y < wh);
+        let result = (modified_x + modified_w > 0 && modified_x < ww && modified_y + modified_h > 0 && modified_y < wh);
+        return result;
     }
 }
 

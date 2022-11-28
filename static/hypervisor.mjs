@@ -185,9 +185,11 @@ export function apply() {
     }
     window.draw = function () {
         hypervisor.runningFor++;
-        if (hypervisor.isTicking) {
+        if (hypervisor.isTicking && hypervisor.sloMo == 0) {
             tickWithEvents();
             cachedImage = get()
+        } else if (hypervisor.sloMo > 0) {
+
         }
         if (hypervisor.runTo > 0) {
             if (hypervisor.isTicking) {
@@ -243,8 +245,10 @@ let hypervisor = {
     step: window.step,
     behaviors: {
         stepWhileRunning: "pause",
-        reloadOnInvalidCache: false
+        reloadOnInvalidCache: false,
+        sloMoFactor: 3
     },
+    sloMo: 0,
     registerEventHandler: registerEventHandler
 }
 

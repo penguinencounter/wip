@@ -62,7 +62,7 @@ def main():
 def js_mime_type(path):
     return flask.send_from_directory(
         directory=app.static_folder,
-        filename=path + '.js',
+        path=path + '.js',
         mimetype='text/javascript'
     )
 
@@ -71,14 +71,13 @@ def js_mime_type(path):
 def mjs_mime_type(path):
     return flask.send_from_directory(
         directory=app.static_folder,
-        filename=path + '.mjs',
+        path=path + '.mjs',
         mimetype='text/javascript'
     )
 
 
 @app.after_request
 def after(res: flask.Response):
-    time.sleep(random.randint(0, lag * 1000) / 1000)
     return res
 
 
